@@ -117,6 +117,18 @@ public class DBWrapper extends DB {
     }
   }
 
+  public void start() throws DBException {
+    // TODO: implement me
+	}
+
+	public void commit() throws DBException {
+    // TODO: implement me
+	}
+
+	public void abort() throws DBException {
+    // TODO: implement me
+	}
+
   /**
    * Read a record from the database. Each field/value pair from the result
    * will be stored in a HashMap.

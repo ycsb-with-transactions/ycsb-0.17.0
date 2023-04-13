@@ -238,6 +238,21 @@ public class JdbcDBClient extends DB {
   }
 
   @Override
+  public void start() throws DBException {
+    // TODO: implement me
+  }
+
+  @Override
+  public void commit() throws DBException {
+    // TODO: implement me
+  }
+
+  @Override
+  public void abort() throws DBException {
+    // TODO: implement me
+  }
+
+  @Override
   public void cleanup() throws DBException {
     if (batchSize > 0) {
       try {

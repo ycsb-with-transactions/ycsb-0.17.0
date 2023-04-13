@@ -71,6 +71,27 @@ public abstract class DB {
   }
 
   /**
+	 * Start a database transaction. 
+	 */
+	public void start() throws DBException
+	{
+	}
+
+	/**
+	 * Commit the current database transaction. 
+	 */
+	public void commit() throws DBException
+	{
+	}
+
+	/**
+	 * Abort the current database transaction. 
+	 */
+	public void abort() throws DBException
+	{
+	}
+
+  /**
    * Cleanup any state for this DB.
    * Called once per DB instance; there is one DB instance per client thread.
    */
