@@ -1,18 +1,15 @@
 /**
  * Copyright (c) 2010-2016 Yahoo! Inc., 2017 YCSB contributors All rights reserved.
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License"); you
- * may not use this file except in compliance with the License. You
- * may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
  * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied. See the License for the specific language governing
- * permissions and limitations under the License. See accompanying
- * LICENSE file.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License. See accompanying LICENSE file.
  */
 
 package site.ycsb;
@@ -43,10 +40,18 @@ import java.util.Vector;
  * recommend you explain the semantics you chose when presenting performance results.
  */
 public abstract class DB {
+
   /**
    * Properties for configuring this DB.
    */
   private Properties properties = new Properties();
+
+  /**
+   * Get the set of properties for this DB.
+   */
+  public Properties getProperties() {
+    return properties;
+  }
 
   /**
    * Set the properties for this DB.
@@ -57,13 +62,6 @@ public abstract class DB {
   }
 
   /**
-   * Get the set of properties for this DB.
-   */
-  public Properties getProperties() {
-    return properties;
-  }
-
-  /**
    * Initialize any state for this DB.
    * Called once per DB instance; there is one DB instance per client thread.
    */
@@ -71,25 +69,22 @@ public abstract class DB {
   }
 
   /**
-	 * Start a database transaction. 
-	 */
-	public void start() throws DBException
-	{
-	}
+   * Start a database transaction.
+   */
+  public void start() throws DBException {
+  }
 
-	/**
-	 * Commit the current database transaction. 
-	 */
-	public void commit() throws DBException
-	{
-	}
+  /**
+   * Commit the current database transaction.
+   */
+  public void commit() throws DBException {
+  }
 
-	/**
-	 * Abort the current database transaction. 
-	 */
-	public void abort() throws DBException
-	{
-	}
+  /**
+   * Abort the current database transaction.
+   */
+  public void abort() throws DBException {
+  }
 
   /**
    * Cleanup any state for this DB.
@@ -107,7 +102,8 @@ public abstract class DB {
    * @param result A HashMap of field/value pairs for the result
    * @return The result of the operation.
    */
-  public abstract Status read(String table, String key, Set<String> fields, Map<String, ByteIterator> result);
+  public abstract Status read(String table, String key, Set<String> fields,
+      Map<String, ByteIterator> result);
 
   /**
    * Perform a range scan for a set of records in the database. Each field/value pair from the result will be stored
@@ -121,7 +117,7 @@ public abstract class DB {
    * @return The result of the operation.
    */
   public abstract Status scan(String table, String startkey, int recordcount, Set<String> fields,
-                              Vector<HashMap<String, ByteIterator>> result);
+      Vector<HashMap<String, ByteIterator>> result);
 
   /**
    * Update a record in the database. Any field/value pairs in the specified values HashMap will be written into the

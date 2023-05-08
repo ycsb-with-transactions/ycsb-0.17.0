@@ -219,7 +219,7 @@ import site.ycsb.measurements.Measurements;
  * <b>Threads</b>
  * <p>
  * For a multi-threaded execution, the number of time series keys set via the 
- * {@code fieldcount} property, must be greater than or equal to the number of
+ * {@code fieldCount} property, must be greater than or equal to the number of
  * threads set via {@code threads}. This is due to each thread choosing a subset
  * of the total number of time series keys and being responsible for writing values 
  * for each time series containing those keys at each timestamp. Thus each thread
