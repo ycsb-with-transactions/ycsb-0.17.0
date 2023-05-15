@@ -264,19 +264,19 @@ public class ClosedEconomyWorkload extends Workload {
   NumberGenerator fieldLengthGenerator;
   boolean readAllFields;
   boolean writeAllFields;
-  NumberGenerator keysequence;
-  NumberGenerator validation_keysequence;
-  DiscreteGenerator operationchooser;
-  NumberGenerator keychooser;
-  Generator fieldchooser;
-  CounterGenerator transactioninsertkeysequence;
-  NumberGenerator scanlength;
-  boolean orderedinserts;
-  long recordcount;
-  long opcount;
-  AtomicInteger actualopcount = new AtomicInteger(0);
+  NumberGenerator keySequence;
+  NumberGenerator validationKeySequence;
+  DiscreteGenerator operationChooser;
+  NumberGenerator keyChooser;
+  Generator fieldChooser;
+  CounterGenerator transactionInsertKeySequence;
+  NumberGenerator scanLength;
+  boolean orderedInserts;
+  long recordCount;
+  long opCount;
+  AtomicInteger actualOpCount = new AtomicInteger(0);
   private Measurements measurements;
-  private Hashtable<String, String> operations = new Hashtable<String, String>() {
+  private final Hashtable<String, String> operations = new Hashtable<String, String>() {
     {
       put("READ", "TX-READ");
       put("UPDATE", "TX-UPDATE");
@@ -285,43 +285,41 @@ public class ClosedEconomyWorkload extends Workload {
       put("READMODIFYWRITE", "TX-READMODIFYWRITE");
     }
   };
-  private long totalcash;
-  private long currenttotal;
-  private long currentcount;
-  private long initialvalue;
+  private long totalCash;
+  private long initialValue;
 
   protected static NumberGenerator getFieldLengthGenerator(Properties p)
       throws WorkloadException {
-    NumberGenerator fieldlengthgenerator;
-    String fieldlengthdistribution = p.getProperty(FIELD_LENGTH_DISTRIBUTION_PROPERTY,
+    NumberGenerator fieldLengthGenerator;
+    String fieldLengthDistribution = p.getProperty(FIELD_LENGTH_DISTRIBUTION_PROPERTY,
         FIELD_LENGTH_DISTRIBUTION_PROPERTY_DEFAULT);
 
-    int num_records = Integer.parseInt(p.getProperty(Client.RECORD_COUNT_PROPERTY));
-    int total_cash = Integer.parseInt(
+    int numRecords = Integer.parseInt(p.getProperty(Client.RECORD_COUNT_PROPERTY));
+    int totalCash = Integer.parseInt(
         p.getProperty(TOTAL_CASH_PROPERTY, TOTAL_CASH_PROPERTY_DEFAULT));
 
-    long fieldlength = Long.parseLong(
+    long fieldLength = Long.parseLong(
         p.getProperty(FIELD_LENGTH_PROPERTY, FIELD_LENGTH_PROPERTY_DEFAULT));
-    String fieldlengthhistogram = p.getProperty(FIELD_LENGTH_HISTOGRAM_FILE_PROPERTY,
+    String fieldLengthHistogram = p.getProperty(FIELD_LENGTH_HISTOGRAM_FILE_PROPERTY,
         FIELD_LENGTH_HISTOGRAM_FILE_PROPERTY_DEFAULT);
-    if (fieldlengthdistribution.compareTo("constant") == 0) {
-      fieldlengthgenerator = new ConstantIntegerGenerator(total_cash / num_records);
-    } else if (fieldlengthdistribution.compareTo("uniform") == 0) {
-      fieldlengthgenerator = new UniformLongGenerator(1, total_cash / num_records);
-    } else if (fieldlengthdistribution.compareTo("zipfian") == 0) {
-      fieldlengthgenerator = new ZipfianGenerator(1, fieldlength);
-    } else if (fieldlengthdistribution.compareTo("histogram") == 0) {
+    if (fieldLengthDistribution.compareTo("constant") == 0) {
+      fieldLengthGenerator = new ConstantIntegerGenerator(totalCash / numRecords);
+    } else if (fieldLengthDistribution.compareTo("uniform") == 0) {
+      fieldLengthGenerator = new UniformLongGenerator(1, totalCash / numRecords);
+    } else if (fieldLengthDistribution.compareTo("zipfian") == 0) {
+      fieldLengthGenerator = new ZipfianGenerator(1, fieldLength);
+    } else if (fieldLengthDistribution.compareTo("histogram") == 0) {
       try {
-        fieldlengthgenerator = new HistogramGenerator(fieldlengthhistogram);
+        fieldLengthGenerator = new HistogramGenerator(fieldLengthHistogram);
       } catch (IOException e) {
         throw new WorkloadException(
-            "Couldn't read field length histogram file: " + fieldlengthhistogram, e);
+            "Couldn't read field length histogram file: " + fieldLengthHistogram, e);
       }
     } else {
       throw new WorkloadException(
-          "Unknown field length distribution \"" + fieldlengthdistribution + "\"");
+          "Unknown field length distribution \"" + fieldLengthDistribution + "\"");
     }
-    return fieldlengthgenerator;
+    return fieldLengthGenerator;
   }
 
   /**
@@ -334,33 +332,33 @@ public class ClosedEconomyWorkload extends Workload {
     fieldCount = Long.parseLong(p.getProperty(FIELD_COUNT_PROPERTY, FIELD_COUNT_PROPERTY_DEFAULT));
     fieldLengthGenerator = ClosedEconomyWorkload.getFieldLengthGenerator(p);
 
-    double readproportion = Double.parseDouble(
+    double readProportion = Double.parseDouble(
         p.getProperty(READ_PROPORTION_PROPERTY, READ_PROPORTION_PROPERTY_DEFAULT));
-    double updateproportion = Double.parseDouble(
+    double updateProportion = Double.parseDouble(
         p.getProperty(UPDATE_PROPORTION_PROPERTY, UPDATE_PROPORTION_PROPERTY_DEFAULT));
-    double insertproportion = Double.parseDouble(
+    double insertProportion = Double.parseDouble(
         p.getProperty(INSERT_PROPORTION_PROPERTY, INSERT_PROPORTION_PROPERTY_DEFAULT));
-    double scanproportion = Double.parseDouble(
+    double scanProportion = Double.parseDouble(
         p.getProperty(SCAN_PROPORTION_PROPERTY, SCAN_PROPORTION_PROPERTY_DEFAULT));
-    double readmodifywriteproportion = Double.parseDouble(
+    double readModifyWriteProportion = Double.parseDouble(
         p.getProperty(READMODIFYWRITE_PROPORTION_PROPERTY,
             READMODIFYWRITE_PROPORTION_PROPERTY_DEFAULT));
 
-    opcount = Long.parseLong(p.getProperty(OPERATION_COUNT_PROPERTY, "0"));
-    recordcount = Long.parseLong(p.getProperty(Client.RECORD_COUNT_PROPERTY));
-    totalcash = Long.parseLong(p.getProperty(TOTAL_CASH_PROPERTY, TOTAL_CASH_PROPERTY_DEFAULT));
-    currenttotal = totalcash;
-    currentcount = recordcount;
-    initialvalue = totalcash / recordcount;
+    opCount = Long.parseLong(p.getProperty(OPERATION_COUNT_PROPERTY, "0"));
+    recordCount = Long.parseLong(p.getProperty(Client.RECORD_COUNT_PROPERTY));
+    totalCash = Long.parseLong(p.getProperty(TOTAL_CASH_PROPERTY, TOTAL_CASH_PROPERTY_DEFAULT));
+    long currentTotal = totalCash;
+    long currentCount = recordCount;
+    initialValue = totalCash / recordCount;
 
-    String requestdistrib = p.getProperty(REQUEST_DISTRIBUTION_PROPERTY,
+    String requestDistrib = p.getProperty(REQUEST_DISTRIBUTION_PROPERTY,
         REQUEST_DISTRIBUTION_PROPERTY_DEFAULT);
-    long maxscanlength = Long.parseLong(
+    long maxScanLength = Long.parseLong(
         p.getProperty(MAX_SCAN_LENGTH_PROPERTY, MAX_SCAN_LENGTH_PROPERTY_DEFAULT));
-    String scanlengthdistrib = p.getProperty(SCAN_LENGTH_DISTRIBUTION_PROPERTY,
+    String scanLengthDistrib = p.getProperty(SCAN_LENGTH_DISTRIBUTION_PROPERTY,
         SCAN_LENGTH_DISTRIBUTION_PROPERTY_DEFAULT);
 
-    long insertstart = Long.parseLong(
+    long insertStart = Long.parseLong(
         p.getProperty(INSERT_START_PROPERTY, INSERT_START_PROPERTY_DEFAULT));
 
     readAllFields = Boolean.parseBoolean(
@@ -370,41 +368,41 @@ public class ClosedEconomyWorkload extends Workload {
 
     if (p.getProperty(INSERT_ORDER_PROPERTY, INSERT_ORDER_PROPERTY_DEFAULT).compareTo("hashed")
         == 0) {
-      orderedinserts = false;
-    } else if (requestdistrib.compareTo("exponential") == 0) {
+      orderedInserts = false;
+    } else if (requestDistrib.compareTo("exponential") == 0) {
       double percentile = Double.parseDouble(
           p.getProperty(ExponentialGenerator.EXPONENTIAL_PERCENTILE_PROPERTY,
               ExponentialGenerator.EXPONENTIAL_PERCENTILE_DEFAULT));
       double frac = Double.parseDouble(p.getProperty(ExponentialGenerator.EXPONENTIAL_FRAC_PROPERTY,
           ExponentialGenerator.EXPONENTIAL_FRAC_DEFAULT));
-      keychooser = new ExponentialGenerator(percentile, recordcount * frac);
+      keyChooser = new ExponentialGenerator(percentile, recordCount * frac);
     } else {
-      orderedinserts = true;
+      orderedInserts = true;
     }
 
-    keysequence = new CounterGenerator(insertstart);
-    validation_keysequence = new CounterGenerator(insertstart);
-    operationchooser = new DiscreteGenerator();
-    if (readproportion > 0) {
-      operationchooser.addValue(readproportion, "READ");
+    keySequence = new CounterGenerator(insertStart);
+    validationKeySequence = new CounterGenerator(insertStart);
+    operationChooser = new DiscreteGenerator();
+    if (readProportion > 0) {
+      operationChooser.addValue(readProportion, "READ");
     }
 
-    if (updateproportion > 0) {
-      operationchooser.addValue(updateproportion, "UPDATE");
+    if (updateProportion > 0) {
+      operationChooser.addValue(updateProportion, "UPDATE");
     }
 
-    if (insertproportion > 0) {
-      operationchooser.addValue(insertproportion, "INSERT");
+    if (insertProportion > 0) {
+      operationChooser.addValue(insertProportion, "INSERT");
     }
 
-    if (readmodifywriteproportion > 0) {
-      operationchooser.addValue(readmodifywriteproportion, "READMODIFYWRITE");
+    if (readModifyWriteProportion > 0) {
+      operationChooser.addValue(readModifyWriteProportion, "READMODIFYWRITE");
     }
 
-    transactioninsertkeysequence = new CounterGenerator(recordcount);
-    if (requestdistrib.compareTo("uniform") == 0) {
-      keychooser = new UniformLongGenerator(0, recordcount - 1);
-    } else if (requestdistrib.compareTo("zipfian") == 0) {
+    transactionInsertKeySequence = new CounterGenerator(recordCount);
+    if (requestDistrib.compareTo("uniform") == 0) {
+      keyChooser = new UniformLongGenerator(0, recordCount - 1);
+    } else if (requestDistrib.compareTo("zipfian") == 0) {
       // it does this by generating a random "next key" in part by taking the modulus over the number of keys
       // if the number of keys changes, this would shift the modulus, and we don't want that to change which keys are popular
       // so we'll actually construct the scrambled zipfian generator with a keyspace that is larger than exists at the beginning
@@ -412,64 +410,64 @@ public class ClosedEconomyWorkload extends Workload {
       // plus the number of predicted keys as the total keyspace. then, if the generator picks a key that hasn't been inserted yet, will
       // just ignore it and pick another key. this way, the size of the keyspace doesn't change from the perspective of the scrambled
       // zipfian generator
-      long opcount = Long.parseLong(p.getProperty(Client.OPERATION_COUNT_PROPERTY));
-      long expectednewkeys = (long) (((double) opcount) * insertproportion
+      long opCount = Long.parseLong(p.getProperty(Client.OPERATION_COUNT_PROPERTY));
+      long expectedNewKeys = (long) (((double) opCount) * insertProportion
           * 2.0); // 2 is fudge factor
 
       long theta = Long.parseLong(p.getProperty(ZIPFIAN_REQUEST_DISTRIBUTION_THETA,
           ZIPFIAN_REQUEST_DISTRIBUTION_THETA_DEFAULT));
 
-      keychooser = new ScrambledZipfianGenerator(recordcount + expectednewkeys, theta);
-    } else if (requestdistrib.compareTo("latest") == 0) {
-      keychooser = new SkewedLatestGenerator(transactioninsertkeysequence);
-    } else if (requestdistrib.equals("hotspot")) {
-      double hotsetfraction = Double.parseDouble(
+      keyChooser = new ScrambledZipfianGenerator(recordCount + expectedNewKeys, theta);
+    } else if (requestDistrib.compareTo("latest") == 0) {
+      keyChooser = new SkewedLatestGenerator(transactionInsertKeySequence);
+    } else if (requestDistrib.equals("hotspot")) {
+      double hotSetFraction = Double.parseDouble(
           p.getProperty(HOTSPOT_DATA_FRACTION, HOTSPOT_DATA_FRACTION_DEFAULT));
-      double hotopnfraction = Double.parseDouble(
+      double hotOpnFraction = Double.parseDouble(
           p.getProperty(HOTSPOT_OPN_FRACTION, HOTSPOT_OPN_FRACTION_DEFAULT));
-      keychooser = new HotspotIntegerGenerator(0, recordcount - 1, hotsetfraction, hotopnfraction);
+      keyChooser = new HotspotIntegerGenerator(0, recordCount - 1, hotSetFraction, hotOpnFraction);
     } else {
-      throw new WorkloadException("Unknown request distribution \"" + requestdistrib + "\"");
+      throw new WorkloadException("Unknown request distribution \"" + requestDistrib + "\"");
     }
 
-    fieldchooser = new UniformLongGenerator(0, fieldCount - 1);
+    fieldChooser = new UniformLongGenerator(0, fieldCount - 1);
 
-    if (scanlengthdistrib.compareTo("uniform") == 0) {
-      scanlength = new UniformLongGenerator(1, maxscanlength);
-    } else if (scanlengthdistrib.compareTo("zipfian") == 0) {
-      scanlength = new ZipfianGenerator(1, maxscanlength);
+    if (scanLengthDistrib.compareTo("uniform") == 0) {
+      scanLength = new UniformLongGenerator(1, maxScanLength);
+    } else if (scanLengthDistrib.compareTo("zipfian") == 0) {
+      scanLength = new ZipfianGenerator(1, maxScanLength);
     } else {
       throw new WorkloadException(
-          "Distribution \"" + scanlengthdistrib + "\" not allowed for scan length");
+          "Distribution \"" + scanLengthDistrib + "\" not allowed for scan length");
     }
 
     measurements = Measurements.getMeasurements();
   }
 
-  public String buildKeyName(long keynum) {
-//		if (!orderedinserts) {
-//			keynum = Utils.hash(keynum);
+  public String buildKeyName(long keyNum) {
+//		if (!orderedInserts) {
+//			keyNum = Utils.hash(keyNum);
 //		}
-    // System.err.println("key: " + keynum);
-    return "user" + keynum;
+    // System.err.println("key: " + keyNum);
+    return "user" + keyNum;
   }
 
   HashMap<String, ByteIterator> buildValues() {
-    HashMap<String, ByteIterator> values = new HashMap<String, ByteIterator>();
+    HashMap<String, ByteIterator> values = new HashMap<>();
 
-    String fieldkey = "field0";
-    ByteIterator data = new StringByteIterator("" + initialvalue);
-    values.put(fieldkey, data);
+    String fieldKey = "field0";
+    ByteIterator data = new StringByteIterator("" + initialValue);
+    values.put(fieldKey, data);
     return values;
   }
 
   HashMap<String, ByteIterator> buildUpdate() {
     // update a random field
-    HashMap<String, ByteIterator> values = new HashMap<String, ByteIterator>();
-    String fieldname = "field" + fieldchooser.nextString();
+    HashMap<String, ByteIterator> values = new HashMap<>();
+    String fieldName = "field" + fieldChooser.nextString();
     ByteIterator data = new RandomByteIterator(
         fieldLengthGenerator.nextValue().longValue());
-    values.put(fieldname, data);
+    values.put(fieldName, data);
     return values;
   }
 
@@ -481,12 +479,12 @@ public class ClosedEconomyWorkload extends Workload {
    * function would have no side effects other than DB operations.
    *
    */
-  public boolean doInsert(DB db, Object threadstate) {
-    long keynum = keysequence.nextValue().longValue();
-    String dbkey = buildKeyName(keynum);
+  public boolean doInsert(DB db, Object threadState) {
+    long keyNum = keySequence.nextValue().longValue();
+    String dbKey = buildKeyName(keyNum);
     HashMap<String, ByteIterator> values = buildValues();
-    if (db.insert(table, dbkey, values).isOk()) {
-      actualopcount.addAndGet(1);
+    if (db.insert(table, dbKey, values).isOk()) {
+      actualOpCount.addAndGet(1);
       return true;
     } else {
       return false;
@@ -500,13 +498,12 @@ public class ClosedEconomyWorkload extends Workload {
    * it will be difficult to reach the target throughput. Ideally, this
    * function would have no side effects other than DB operations.
    *
-   * @throws WorkloadException
    */
-  public boolean doDelete(DB db, Object threadstate) throws WorkloadException {
-    long keynum = keysequence.nextValue().longValue();
-    String dbkey = buildKeyName(keynum);
-    if (db.delete(table, dbkey).isOk()) {
-      actualopcount.addAndGet(1);
+  public boolean doDelete(DB db, Object threadState) {
+    long keyNum = keySequence.nextValue().longValue();
+    String dbKey = buildKeyName(keyNum);
+    if (db.delete(table, dbKey).isOk()) {
+      actualOpCount.addAndGet(1);
       return true;
     } else {
       return false;
@@ -521,19 +518,19 @@ public class ClosedEconomyWorkload extends Workload {
    * function would have no side effects other than DB operations.
    *
    */
-  public boolean doTransaction(DB db, Object threadstate) {
-    boolean ret = true;
+  public boolean doTransaction(DB db, Object threadState) {
+    boolean ret;
     long st = System.nanoTime();
 
-    String op = operationchooser.nextString();
+    String op = operationChooser.nextString();
 
-    if (op.compareTo("READ") == 0) {
+    if (op.equals("READ")) {
       ret = doTransactionRead(db);
-    } else if (op.compareTo("UPDATE") == 0) {
+    } else if (op.equals("UPDATE")) {
       ret = doTransactionUpdate(db);
-    } else if (op.compareTo("INSERT") == 0) {
+    } else if (op.equals("INSERT")) {
       ret = doTransactionInsert(db);
-    } else if (op.compareTo("SCAN") == 0) {
+    } else if (op.equals("SCAN")) {
       ret = doTransactionScan(db);
     } else {
       ret = doTransactionReadModifyWrite(db);
@@ -547,45 +544,45 @@ public class ClosedEconomyWorkload extends Workload {
     } else {
       measurements.reportStatus(operations.get(op), Status.OK);
     }
-    actualopcount.addAndGet(1);
+    actualOpCount.addAndGet(1);
 
     return ret;
   }
 
   long nextKeyNum() {
-    long keynum;
-    if (keychooser instanceof ExponentialGenerator) {
+    long keyNum;
+    if (keyChooser instanceof ExponentialGenerator) {
       do {
-        keynum = transactioninsertkeysequence.lastValue().longValue()
-            - keychooser.nextValue().longValue();
-      } while (keynum < 0);
+        keyNum = transactionInsertKeySequence.lastValue()
+            - keyChooser.nextValue().longValue();
+      } while (keyNum < 0);
     } else {
       do {
-        keynum = keychooser.nextValue().longValue();
-      } while (keynum > transactioninsertkeysequence.lastValue().longValue());
+        keyNum = keyChooser.nextValue().longValue();
+      } while (keyNum > transactionInsertKeySequence.lastValue());
     }
-    return keynum;
+    return keyNum;
   }
 
   public boolean doTransactionRead(DB db) {
     // choose a random key
-    long keynum = nextKeyNum();
+    long keyNum = nextKeyNum();
 
-    String keyname = buildKeyName(keynum);
+    String keyname = buildKeyName(keyNum);
 
     HashSet<String> fields = null;
 
     if (!readAllFields) {
       // read a random field
-      String fieldname = "field" + fieldchooser.nextString();
+      String fieldName = "field" + fieldChooser.nextString();
 
-      fields = new HashSet<String>();
-      fields.add(fieldname);
+      fields = new HashSet<>();
+      fields.add(fieldName);
     }
 
-    HashMap<String, ByteIterator> firstvalues = new HashMap<String, ByteIterator>();
+    HashMap<String, ByteIterator> firstValues = new HashMap<>();
 
-    return (db.read(table, keyname, fields, firstvalues).isOk());
+    return (db.read(table, keyname, fields, firstValues).isOk());
   }
 
   public boolean doTransactionReadModifyWrite(DB db) {
@@ -601,31 +598,31 @@ public class ClosedEconomyWorkload extends Workload {
       second = temp;
     }
 
-    String firstkey = buildKeyName(first);
-    String secondkey = buildKeyName(second);
+    String firstKey = buildKeyName(first);
+    String secondKey = buildKeyName(second);
 
     HashSet<String> fields = null;
 
     if (!readAllFields) {
       // read a random field
-      String fieldname = "field" + fieldchooser.nextString();
+      String fieldName = "field" + fieldChooser.nextString();
 
-      fields = new HashSet<String>();
-      fields.add(fieldname);
+      fields = new HashSet<>();
+      fields.add(fieldName);
     }
 
-    HashMap<String, ByteIterator> firstvalues = new HashMap<String, ByteIterator>();
-    HashMap<String, ByteIterator> secondvalues = new HashMap<String, ByteIterator>();
+    HashMap<String, ByteIterator> firstValues = new HashMap<>();
+    HashMap<String, ByteIterator> secondValues = new HashMap<>();
 
     // do the transaction
     long st = System.currentTimeMillis();
 
-    if (db.read(table, firstkey, fields, firstvalues).isOk() && db.read(table, secondkey, fields,
-        secondvalues).isOk()) {
+    if (db.read(table, firstKey, fields, firstValues).isOk() && db.read(table, secondKey, fields,
+        secondValues).isOk()) {
       try {
-        long firstamount = Long.parseLong(firstvalues.get("field0")
+        long firstamount = Long.parseLong(firstValues.get("field0")
             .toString());
-        long secondamount = Long.parseLong(secondvalues.get("field0")
+        long secondamount = Long.parseLong(secondValues.get("field0")
             .toString());
 
         if (firstamount > 0) {
@@ -633,13 +630,13 @@ public class ClosedEconomyWorkload extends Workload {
           secondamount++;
         }
 
-        firstvalues.put("field0",
+        firstValues.put("field0",
             new StringByteIterator(Long.toString(firstamount)));
-        secondvalues.put("field0",
+        secondValues.put("field0",
             new StringByteIterator(Long.toString(secondamount)));
 
-        if (db.update(table, firstkey, firstvalues).isOk() ||
-            db.update(table, secondkey, secondvalues).isOk()) {
+        if (db.update(table, firstKey, firstValues).isOk() ||
+            db.update(table, secondKey, secondValues).isOk()) {
           return false;
         }
 
@@ -657,32 +654,32 @@ public class ClosedEconomyWorkload extends Workload {
 
   public boolean doTransactionScan(DB db) {
     // choose a random key
-    long keynum = nextKeyNum();
+    long keyNum = nextKeyNum();
 
-    String startkeyname = buildKeyName(keynum);
+    String startKeyName = buildKeyName(keyNum);
 
     // choose a random scan length
-    int len = scanlength.nextValue().intValue();
+    int len = scanLength.nextValue().intValue();
 
     HashSet<String> fields = null;
 
     if (!readAllFields) {
       // read a random field
-      String fieldname = "field" + fieldchooser.nextString();
+      String fieldName = "field" + fieldChooser.nextString();
 
-      fields = new HashSet<String>();
-      fields.add(fieldname);
+      fields = new HashSet<>();
+      fields.add(fieldName);
     }
 
-    return (db.scan(table, startkeyname, len, fields,
-        new Vector<HashMap<String, ByteIterator>>()).isOk());
+    return (db.scan(table, startKeyName, len, fields,
+        new Vector<>()).isOk());
   }
 
   public boolean doTransactionUpdate(DB db) {
     // choose a random key
-    long keynum = nextKeyNum();
+    long keyNum = nextKeyNum();
 
-    String keyname = buildKeyName(keynum);
+    String keyName = buildKeyName(keyNum);
 
     HashMap<String, ByteIterator> values;
 
@@ -694,17 +691,17 @@ public class ClosedEconomyWorkload extends Workload {
       values = buildUpdate();
     }
 
-    return (db.update(table, keyname, values).isOk());
+    return (db.update(table, keyName, values).isOk());
   }
 
   public boolean doTransactionInsert(DB db) {
     // choose the next key
-    long keynum = transactioninsertkeysequence.nextValue();
+    long keyNum = transactionInsertKeySequence.nextValue();
 
-    String dbkey = buildKeyName(keynum);
+    String dbKey = buildKeyName(keyNum);
 
     HashMap<String, ByteIterator> values = buildValues();
-    return (db.insert(table, dbkey, values).isOk());
+    return (db.insert(table, dbKey, values).isOk());
   }
 
   /**
@@ -714,13 +711,13 @@ public class ClosedEconomyWorkload extends Workload {
    * @throws WorkloadException
    */
   public boolean validate(DB db) throws WorkloadException {
-    HashSet<String> fields = new HashSet<String>();
+    HashSet<String> fields = new HashSet<>();
     fields.add("field0");
     System.out.println("Validating data");
-    HashMap<String, ByteIterator> values = new HashMap<String, ByteIterator>();
+    HashMap<String, ByteIterator> values = new HashMap<>();
     long counted_sum = 0;
-    for (long i = 0; i < recordcount; i++) {
-      String keyname = buildKeyName(validation_keysequence.nextValue().longValue());
+    for (long i = 0; i < recordCount; i++) {
+      String keyname = buildKeyName(validationKeySequence.nextValue().longValue());
       try {
         db.start();
         db.read(table, keyname, fields, values);
@@ -731,13 +728,13 @@ public class ClosedEconomyWorkload extends Workload {
       counted_sum += Long.parseLong(values.get("field0").toString());
     }
 
-    if (counted_sum != totalcash) {
+    if (counted_sum != totalCash) {
       System.out.println("Validation failed");
-      System.out.println("[TOTAL CASH], " + totalcash);
+      System.out.println("[TOTAL CASH], " + totalCash);
       System.out.println("[COUNTED CASH], " + counted_sum);
-      long count = actualopcount.intValue();
+      long count = actualOpCount.intValue();
       System.out.println("[ACTUAL OPERATIONS], " + count);
-      System.out.println("[ANOMALY SCORE], " + Math.abs((totalcash - counted_sum) / (1.0 * count)));
+      System.out.println("[ANOMALY SCORE], " + Math.abs((totalCash - counted_sum) / (1.0 * count)));
       return false;
     } else {
       return true;

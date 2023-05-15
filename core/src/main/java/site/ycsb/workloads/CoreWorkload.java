@@ -53,7 +53,7 @@ import java.util.*;
  * <LI><b>insertstart</b>: for parallel loads and runs, defines the starting record for this
  * YCSB instance (default: 0)
  * <LI><b>insertcount</b>: for parallel loads and runs, defines the number of records for this
- * YCSB instance (default: recordcount)
+ * YCSB instance (default: recordCount)
  * <LI><b>zeropadding</b>: for generating a record sequence compatible with string sort order by
  * 0 padding the record number. Controls the number of 0s to use for padding. (default: 1)
  * For example for row 5, with zeropadding=1 you get 'user5' key and with zeropading=8 you get
@@ -436,10 +436,10 @@ public class CoreWorkload extends Workload {
         Long.parseLong(p.getProperty(INSERT_START_PROPERTY, INSERT_START_PROPERTY_DEFAULT));
     long insertcount=
         Integer.parseInt(p.getProperty(INSERT_COUNT_PROPERTY, String.valueOf(recordcount - insertstart)));
-    // Confirm valid values for insertstart and insertcount in relation to recordcount
+    // Confirm valid values for insertstart and insertcount in relation to recordCount
     if (recordcount < (insertstart + insertcount)) {
-      System.err.println("Invalid combination of insertstart, insertcount and recordcount.");
-      System.err.println("recordcount must be bigger than insertstart + insertcount.");
+      System.err.println("Invalid combination of insertstart, insertcount and recordCount.");
+      System.err.println("recordCount must be bigger than insertstart + insertcount.");
       System.exit(-1);
     }
     zeropadding =
