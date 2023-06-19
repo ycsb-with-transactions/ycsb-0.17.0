@@ -14,25 +14,17 @@
 # LICENSE file.
 
 
-# Yahoo! Cloud System Benchmark
-# Workload A: Update heavy workload
-#   Application example: Session store recording recent actions
-#
-#   Read/update ratio: 50/50
-#   Default data size: 1 KB records (10 fields, 100 bytes each, plus key)
-#   Request distribution: zipfian
-
-recordCount=1
-operationCount=1
-workload=com.yahoo.ycsb.workloads.ClosedEconomyWorkload
+recordcount=50
+operationcount=500
+workload=site.ycsb.workloads.ClosedEconomyWorkload
 
 totalCash=100
 
-readProportion=0.9
+readProportion=0.8
 updateProportion=0
 scanProportion=0
-insertProportion=0
-readModifyWriteProportion=0.1
+insertProportion=0.2
+readModifyWriteProportion=0
 
 requestDistribution=zipfian
 zipfianRequestDistributionTheta=0.99
@@ -40,7 +32,7 @@ zipfianRequestDistributionTheta=0.99
 # following are for Calistoga
 fieldCount=1
 fieldLength=100
-writeAllFields=true
-readAllFields=true
+writeallfields=true
+readallfields=true
 
 histogram.buckets=0
