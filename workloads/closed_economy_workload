@@ -22,12 +22,12 @@
 #   Default data size: 1 KB records (10 fields, 100 bytes each, plus key)
 #   Request distribution: zipfian
 
-recordCount=10000
-operationCount=1000000
+recordcount=10000
+operationcount=1000000
 #recordcount=100
 #operationcount=10000
 
-workload=com.yahoo.ycsb.workloads.ClosedEconomyWorkload
+workload=site.ycsb.workloads.ClosedEconomyWorkload
 
 totalCash=10000000
 

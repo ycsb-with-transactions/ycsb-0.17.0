@@ -538,11 +538,10 @@ public class ClosedEconomyWorkload extends Workload {
 
     long en = System.nanoTime();
     measurements.measure(operations.get(op), (int) ((en - st) / 1000));
-    // todo: not sure, -1 and 0 meaning in the new status
     if (ret) {
-      measurements.reportStatus(operations.get(op), Status.ERROR);
-    } else {
       measurements.reportStatus(operations.get(op), Status.OK);
+    } else {
+      measurements.reportStatus(operations.get(op), Status.ERROR);
     }
     actualOpCount.addAndGet(1);
 
