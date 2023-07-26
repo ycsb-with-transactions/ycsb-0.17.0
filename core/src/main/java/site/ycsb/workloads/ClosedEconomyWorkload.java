@@ -610,8 +610,8 @@ public class ClosedEconomyWorkload extends Workload {
       fields.add(fieldName);
     }
 
-    HashMap<String, ByteIterator> firstValues = new HashMap<>();
-    HashMap<String, ByteIterator> secondValues = new HashMap<>();
+    HashMap<String, ByteIterator> firstValues = buildValues();
+    HashMap<String, ByteIterator> secondValues = buildValues();
 
     // do the transaction
     long st = System.currentTimeMillis();
@@ -636,7 +636,7 @@ public class ClosedEconomyWorkload extends Workload {
 
         if (db.update(table, firstKey, firstValues).isOk() ||
             db.update(table, secondKey, secondValues).isOk()) {
-          return false;
+          return true;
         }
 
         long en = System.currentTimeMillis();
