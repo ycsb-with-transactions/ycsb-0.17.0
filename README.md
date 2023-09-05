@@ -16,11 +16,12 @@ permissions and limitations under the License. See accompanying
 LICENSE file.
 -->
 
-YCSB
+YCSB+T
 ====================================
-[![Build Status](https://travis-ci.org/brianfrankcooper/YCSB.png?branch=master)](https://travis-ci.org/brianfrankcooper/YCSB)
 
-
+Background
+-----
+This project is based on version 0.17.0 of [YCSB](https://github.com/brianfrankcooper/YCSB/releases/tag/0.17.0), with additional support for transaction features as discussed in [Dr. Akon Dey](https://www.linkedin.com/in/akon-dey)'s 2014 IEEE [paper](https://ieeexplore.ieee.org/document/6818330). 
 
 Links
 -----
@@ -34,13 +35,12 @@ Getting Started
 1. Download the [latest release of YCSB](https://github.com/brianfrankcooper/YCSB/releases/latest):
 
     ```sh
-    curl -O --location https://github.com/brianfrankcooper/YCSB/releases/download/0.15.0/ycsb-0.15.0.tar.gz
-    tar xfvz ycsb-0.15.0.tar.gz
-    cd ycsb-0.15.0
+    curl -O --location https://github.com/brianfrankcooper/YCSB/releases/download/0.17.0/ycsb-0.17.0.tar.gz
+    tar xfvz ycsb-0.17.0.tar.gz
+    cd ycsb-0.17.0
     ```
     
-2. Set up a database to benchmark. There is a README file under each binding 
-   directory.
+2. Set up a database to benchmark. There is a README file under each binding directory. NOTE: Also see "Post-setup with IntelliJ" section below.
 
 3. Run YCSB command. 
 
@@ -78,3 +78,16 @@ To build the full distribution, with all database bindings:
 To build a single database binding:
 
     mvn -pl mongodb-binding -am clean package
+    
+
+Post-setup with IntelliJ
+----------------------
+
+YCSB provides a mock database, BasicDB, that merely prints any input to the console; this could be used to determine whether YCSB is set up correctly.
+
+After finishing initial setup, IntelliJ run configurations for loading and running (as described in item 3 of "Getting Started") could be created as follows:
+
+<img width="600" alt="ij_load" src="https://github.com/ycsb-with-transactions/ycsb-0.17.0/assets/35314048/96d87fc9-51ee-48c2-9ab6-54850f47a6fd">
+<img width="600" alt="ij_run" src="https://github.com/ycsb-with-transactions/ycsb-0.17.0/assets/35314048/d22e361c-22b6-4041-a3d3-ac7d6494d94f">
+
+This allows for easy debugging with IntelliJ, as any breakpoints will be properly recognized (as opposed to loading and running via bash script).
