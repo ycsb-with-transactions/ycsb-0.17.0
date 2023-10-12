@@ -239,17 +239,35 @@ public class JdbcDBClient extends DB {
 
   @Override
   public void start() throws DBException {
-    // TODO: implement me
+    super.start();
+    try {
+      conns.get(0).setAutoCommit(false);
+    } catch (SQLException e) {
+      e.printStackTrace();
+      throw new DBException(e);
+    }
   }
 
   @Override
   public void commit() throws DBException {
-    // TODO: implement me
+    super.commit();
+    try {
+      conns.get(0).commit();
+    } catch (SQLException e) {
+      e.printStackTrace();
+      throw new DBException(e);
+    }
   }
 
   @Override
   public void abort() throws DBException {
-    // TODO: implement me
+    super.abort();
+    try {
+      conns.get(0).rollback();
+    } catch (SQLException e) {
+      e.printStackTrace();
+      throw new DBException(e);
+    }
   }
 
   @Override
