@@ -31,15 +31,16 @@ LICENSE file.
   <packaging>jar</packaging>
 
   <dependencies>
+    <!-- https://mvnrepository.com/artifact/org.mongodb/mongo-java-driver -->
     <dependency>
       <groupId>org.mongodb</groupId>
       <artifactId>mongo-java-driver</artifactId>
-      <version>${mongodb.version}</version>
+      <version>3.12.14</version>
     </dependency>
     <dependency>
-      <groupId>com.allanbank</groupId>
-      <artifactId>mongodb-async-driver</artifactId>
-      <version>${mongodb.async.version}</version>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongodb-driver-sync</artifactId>
+      <version>${mongodb.version}</version>
     </dependency>
     <dependency>
       <groupId>site.ycsb</groupId>
@@ -52,6 +53,17 @@ LICENSE file.
       <artifactId>logback-classic</artifactId>
       <version>1.1.2</version>
       <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongodb-crypt</artifactId>
+      <version>1.2.0</version>
+    </dependency>
+    <!-- mongodb-crypt is pulling in a SNAPSHOT release of bson, so to work around that pin the bson library explicitly -->
+    <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>bson</artifactId>
+      <version>${mongodb.version}</version>
     </dependency>
 
     <dependency>
