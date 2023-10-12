@@ -33,6 +33,9 @@ on x86-64 Linux box:
 Replace x.x.x above with the latest stable release version for MongoDB.
 See http://docs.mongodb.org/manual/installation/ for installation steps for various operating systems.
 
+*Update on 10/12/23*: Install mongodb community v7
+https://www.mongodb.com/docs/v7.0/tutorial/install-mongodb-on-os-x/
+
 ### 2. Install Java and Maven
 
 Go to http://www.oracle.com/technetwork/java/javase/downloads/index.html
