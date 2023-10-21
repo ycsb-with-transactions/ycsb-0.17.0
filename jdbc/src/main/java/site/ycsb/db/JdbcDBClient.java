@@ -224,7 +224,7 @@ public class JdbcDBClient extends DB {
 
       this.dbFlavor = DBFlavor.fromJdbcUrl(urlArr[0]);
     } catch (ClassNotFoundException e) {
-      System.err.println("Error in initializing the JDBS driver: " + e);
+      System.err.println("Error in initializing the JDBC driver: " + e);
       throw new DBException(e);
     } catch (SQLException e) {
       System.err.println("Error in database operation: " + e);
@@ -240,6 +240,7 @@ public class JdbcDBClient extends DB {
   @Override
   public void start() throws DBException {
     super.start();
+    System.out.println("Start in JDBC.");
     try {
       conns.get(0).setAutoCommit(false);
     } catch (SQLException e) {
@@ -251,6 +252,7 @@ public class JdbcDBClient extends DB {
   @Override
   public void commit() throws DBException {
     super.commit();
+    System.out.println("Commit in JDBC.");
     try {
       conns.get(0).commit();
     } catch (SQLException e) {
@@ -262,6 +264,7 @@ public class JdbcDBClient extends DB {
   @Override
   public void abort() throws DBException {
     super.abort();
+    System.out.println("Abort in JDBC.");
     try {
       conns.get(0).rollback();
     } catch (SQLException e) {

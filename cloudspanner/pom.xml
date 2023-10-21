@@ -22,7 +22,7 @@ LICENSE file.
     <groupId>site.ycsb</groupId>
     <artifactId>binding-parent</artifactId>
     <version>0.17.0</version>
-    <relativePath>../binding-parent/</relativePath>
+    <relativePath>../binding-parent</relativePath>
   </parent>
 
   <artifactId>cloudspanner-binding</artifactId>
@@ -33,7 +33,8 @@ LICENSE file.
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
-      <version>${cloudspanner.version}</version>
+<!--      <version>${cloudspanner.version}</version>-->
+      <version>6.51.0</version>
       <exclusions>
         <exclusion> <!-- exclude an old version of Guava -->
           <groupId>com.google.guava</groupId>
@@ -41,6 +42,7 @@ LICENSE file.
         </exclusion>
       </exclusions>
     </dependency>
+
     
     <dependency>
       <groupId>site.ycsb</groupId>
