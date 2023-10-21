@@ -355,11 +355,12 @@ public class CloudSpannerClient extends DB {
     try {
 //      dbClient.writeAtLeastOnce(bufferedMutations);
       tx.buffer(bufferedMutations);
-      bufferedMutations.clear();
+//      bufferedMutations.clear();
     } catch (Exception e) {
       LOGGER.log(Level.INFO, "insert()", e);
       return Status.ERROR;
     }
+    bufferedMutations.clear();
     return Status.OK;
   }
 
@@ -369,11 +370,12 @@ public class CloudSpannerClient extends DB {
       if (bufferedMutations.size() > 0) {
 //        dbClient.writeAtLeastOnce(bufferedMutations);
         tx.buffer(bufferedMutations);
-        bufferedMutations.clear();
+//        bufferedMutations.clear();
       }
     } catch (Exception e) {
       LOGGER.log(Level.INFO, "cleanup()", e);
     }
+    bufferedMutations.clear();
   }
 
   @Override
