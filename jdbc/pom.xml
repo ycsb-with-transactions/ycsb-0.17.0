@@ -82,5 +82,20 @@ LICENSE file.
         </exclusion>
       </exclusions>
     </dependency>
+
+    <!-- https://mvnrepository.com/artifact/com.google.api.grpc/proto-google-cloud-spanner-v1 -->
+    <dependency>
+      <groupId>com.google.api.grpc</groupId>
+      <artifactId>proto-google-cloud-spanner-v1</artifactId>
+      <version>6.52.1</version>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/com.google.api.grpc/grpc-google-cloud-spanner-v1 -->
+    <dependency>
+      <groupId>com.google.api.grpc</groupId>
+      <artifactId>grpc-google-cloud-spanner-v1</artifactId>
+      <version>6.52.1</version>
+    </dependency>
+
   </dependencies>
 </project>

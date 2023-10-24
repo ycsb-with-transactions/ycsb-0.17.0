@@ -355,12 +355,12 @@ public class CloudSpannerClient extends DB {
     try {
 //      dbClient.writeAtLeastOnce(bufferedMutations);
       tx.buffer(bufferedMutations);
-//      bufferedMutations.clear();
+      bufferedMutations.clear();
     } catch (Exception e) {
       LOGGER.log(Level.INFO, "insert()", e);
       return Status.ERROR;
     }
-    bufferedMutations.clear();
+//    bufferedMutations.clear();
     return Status.OK;
   }
 
@@ -369,13 +369,18 @@ public class CloudSpannerClient extends DB {
     try {
       if (bufferedMutations.size() > 0) {
 //        dbClient.writeAtLeastOnce(bufferedMutations);
-        tx.buffer(bufferedMutations);
+//        tx.buffer(bufferedMutations);
 //        bufferedMutations.clear();
+
+        transactionManager.begin();
+        tx = transactionManager.begin();
+        tx.buffer(bufferedMutations);
+        transactionManager.commit();
       }
     } catch (Exception e) {
       LOGGER.log(Level.INFO, "cleanup()", e);
     }
-    bufferedMutations.clear();
+//    bufferedMutations.clear();
   }
 
   @Override
@@ -401,17 +406,17 @@ public class CloudSpannerClient extends DB {
   public void start() throws DBException {
     super.start();
     transactionManager = dbClient.transactionManager();
-    System.err.println("*********** Manager comes **************");
+//    System.err.println("*********** Manager comes **************");
     tx = transactionManager.begin();
-    System.err.println("=================  Begin  ====================");
+//    System.err.println("=================  Begin  ====================");
   }
 
   @Override
   public void commit() throws DBException {
     super.commit();
-    System.err.println("=================  Commit Begin  ====================");
+//    System.err.println("=================  Commit Begin  ====================");
     transactionManager.commit();
-    System.err.println("=================  Commit Ends  ====================");
+//    System.err.println("=================  Commit Ends  ====================");
   }
 
   @Override
