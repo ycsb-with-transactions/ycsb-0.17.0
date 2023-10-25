@@ -371,11 +371,11 @@ public class CloudSpannerClient extends DB {
 //        dbClient.writeAtLeastOnce(bufferedMutations);
 //        tx.buffer(bufferedMutations);
 //        bufferedMutations.clear();
-
-        transactionManager.begin();
+        transactionManager = dbClient.transactionManager();
         tx = transactionManager.begin();
         tx.buffer(bufferedMutations);
         transactionManager.commit();
+        bufferedMutations.clear();
       }
     } catch (Exception e) {
       LOGGER.log(Level.INFO, "cleanup()", e);

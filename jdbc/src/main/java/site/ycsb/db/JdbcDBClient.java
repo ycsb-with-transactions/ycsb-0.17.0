@@ -235,30 +235,33 @@ public class JdbcDBClient extends DB {
     }
 
     initialized = true;
+    System.err.println("Successfully initialized...");
   }
 
   @Override
   public void start() throws DBException {
     super.start();
-    System.out.println("Start in JDBC.");
     try {
       conns.get(0).setAutoCommit(false);
     } catch (SQLException e) {
       e.printStackTrace();
       throw new DBException(e);
     }
+    System.err.println("Start in JDBC.");
   }
 
   @Override
   public void commit() throws DBException {
     super.commit();
-    System.out.println("Commit in JDBC.");
+//    System.out.println("Commit in JDBC.");
     try {
       conns.get(0).commit();
+      System.err.println("** Commit in JDBC. **" + "        " + conns.size());
     } catch (SQLException e) {
       e.printStackTrace();
       throw new DBException(e);
     }
+    System.err.println("** Finished commit in JDBC. **");
   }
 
   @Override

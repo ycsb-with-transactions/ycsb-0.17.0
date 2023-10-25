@@ -97,5 +97,12 @@ LICENSE file.
       <version>6.52.1</version>
     </dependency>
 
+    <!-- https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java -->
+    <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+      <version>4.0.0-rc-2</version>
+    </dependency>
+
   </dependencies>
 </project>
