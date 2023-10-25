@@ -82,7 +82,8 @@ public class RiakKVClientTest {
    */
   @AfterClass
   public static void tearDownClass() throws Exception {
-    // Delete all added keys before cleanup ONLY IF TEST ACTUALLY STARTED.
+    // Delete all added keys before
+    // cleanup ONLY IF TEST ACTUALLY STARTED.
     if (testStarted) {
       for (int i = 0; i <= recordsToInsert; i++) {
         delete(keyPrefix + Integer.toString(i));

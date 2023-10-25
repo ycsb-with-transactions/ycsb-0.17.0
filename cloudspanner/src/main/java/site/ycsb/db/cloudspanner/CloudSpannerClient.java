@@ -412,15 +412,25 @@ public class CloudSpannerClient extends DB {
   }
 
   @Override
-  public void commit() throws DBException, InterruptedException {
+  public void commit() throws DBException {
     super.commit();
 //    System.err.println("=================  Commit Begin  ====================");
-    try {
-      transactionManager.commit();
-    } catch (AbortedException e) {
-      Thread.sleep(e.getRetryDelayInMillis() / 1000);
-      tx = transactionManager.resetForRetry();
+
+    while (true) {
+      try {
+        transactionManager.commit();
+        break;
+      } catch (AbortedException e) {
+        try {
+          Thread.sleep(e.getRetryDelayInMillis());
+          tx = transactionManager.resetForRetry();
+        } catch (InterruptedException ie) {
+          System.err.println("Sleep was interrupted: " + ie.getMessage());
+          break;
+        }
+      }
     }
+
 //    System.err.println("=================  Commit Ends  ====================");
   }
 
