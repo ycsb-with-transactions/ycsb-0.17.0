@@ -412,10 +412,15 @@ public class CloudSpannerClient extends DB {
   }
 
   @Override
-  public void commit() throws DBException {
+  public void commit() throws DBException, InterruptedException {
     super.commit();
 //    System.err.println("=================  Commit Begin  ====================");
-    transactionManager.commit();
+    try {
+      transactionManager.commit();
+    } catch (AbortedException e) {
+      Thread.sleep(e.getRetryDelayInMillis() / 1000);
+      tx = transactionManager.resetForRetry();
+    }
 //    System.err.println("=================  Commit Ends  ====================");
   }
 

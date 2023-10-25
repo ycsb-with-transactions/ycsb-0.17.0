@@ -77,7 +77,7 @@ public abstract class DB {
   /**
    * Commit the current database transaction.
    */
-  public void commit() throws DBException {
+  public void commit() throws DBException, InterruptedException {
   }
 
   /**
