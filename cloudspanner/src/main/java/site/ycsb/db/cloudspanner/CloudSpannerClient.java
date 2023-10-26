@@ -229,19 +229,30 @@ public class CloudSpannerClient extends DB {
           .bind("key").to(key)
           .build();
     }
-    try (ResultSet resultSet = tx.executeQuery(query)) {
-//    try (ResultSet resultSet = dbClient.singleUse(timestampBound).executeQuery(query)) {
-      resultSet.next();
-      decodeStruct(columns, resultSet, result);
-      if (resultSet.next()) {
-        throw new Exception("Expected exactly one row for each read.");
-      }
 
-      return Status.OK;
-    } catch (Exception e) {
-      LOGGER.log(Level.INFO, "readUsingQuery()", e);
-      return Status.ERROR;
+    while (true) {
+      try (ResultSet resultSet = tx.executeQuery(query)) {
+//    try (ResultSet resultSet = dbClient.singleUse(timestampBound).executeQuery(query)) {
+        resultSet.next();
+        decodeStruct(columns, resultSet, result);
+        if (resultSet.next()) {
+          throw new Exception("Expected exactly one row for each read.");
+        }
+        break;
+      } catch (AbortedException ae) {
+        try {
+          Thread.sleep(ae.getRetryDelayInMillis() / 1000);
+          tx = transactionManager.resetForRetry();
+        } catch (InterruptedException ie) {
+          System.err.println("Sleep was interrupted: " + ie.getMessage());
+          break;
+        }
+      } catch(Exception e) {
+        LOGGER.log(Level.INFO, "readUsingQuery()", e);
+        return Status.ERROR;
+      }
     }
+    return Status.OK;
   }
 
   @Override
@@ -416,20 +427,22 @@ public class CloudSpannerClient extends DB {
     super.commit();
 //    System.err.println("=================  Commit Begin  ====================");
 
-    while (true) {
-      try {
-        transactionManager.commit();
-        break;
-      } catch (AbortedException e) {
-        try {
-          Thread.sleep(e.getRetryDelayInMillis());
-          tx = transactionManager.resetForRetry();
-        } catch (InterruptedException ie) {
-          System.err.println("Sleep was interrupted: " + ie.getMessage());
-          break;
-        }
-      }
-    }
+    transactionManager.commit();
+
+//    while (true) {
+//      try {
+//        transactionManager.commit();
+//        break;
+//      } catch (AbortedException e) {
+//        try {
+//          Thread.sleep(e.getRetryDelayInMillis() / 1000);
+//          tx = transactionManager.resetForRetry();
+//        } catch (InterruptedException ie) {
+//          System.err.println("Sleep was interrupted: " + ie.getMessage());
+//          break;
+//        }
+//      }
+//    }
 
 //    System.err.println("=================  Commit Ends  ====================");
   }
