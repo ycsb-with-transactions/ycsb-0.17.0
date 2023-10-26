@@ -404,7 +404,7 @@ public class CloudSpannerClient extends DB {
 
   @Override
   public void start() throws DBException {
-//    super.start();
+    super.start();
     transactionManager = dbClient.transactionManager();
 //    System.err.println("*********** Manager comes **************");
     tx = transactionManager.begin();
