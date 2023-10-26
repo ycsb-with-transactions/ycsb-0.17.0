@@ -122,15 +122,25 @@ public class ClientThread implements Runnable {
 //          if (!workload.doTransaction(db, workloadstate)) {
 //            break;
 //          }
-          try {
-            db.start();
-            if (workload.doTransaction(db, workloadstate)) {
-              db.commit();
-            } else {
-              db.abort();
+          int maxRetryCount = 3;
+          int retryCount = 0;
+          while (retryCount < maxRetryCount) {
+            try {
+              db.start();
+              if (workload.doTransaction(db, workloadstate)) {
+                db.commit();
+              } else {
+                db.abort();
+              }
+                break;
+            } catch (DBException e) {
+              retryCount++;
+              if (retryCount == maxRetryCount) {
+                throw new WorkloadException(e);
+              }
+//              db.abort();
+//              throw new WorkloadException(e);
             }
-          } catch (DBException e) {
-            throw new WorkloadException(e);
           }
 
           opsdone++;
@@ -146,15 +156,36 @@ public class ClientThread implements Runnable {
 //            break;
 //          }
 
-          try {
-            db.start();
-            if (workload.doInsert(db, workloadstate)) {
-              db.commit();
-            } else {
-              db.abort();
+//          try {
+//            db.start();
+//            if (workload.doInsert(db, workloadstate)) {
+//              db.commit();
+//            } else {
+//              db.abort();
+//            }
+//          } catch (DBException e) {
+//            throw new WorkloadException(e);
+//          }
+          int maxRetryCount = 3;
+          int retryCount = 0;
+          while (retryCount < maxRetryCount) {
+            try {
+              db.start();
+              if (workload.doInsert(db, workloadstate)) {
+                db.commit();
+              } else {
+                db.abort();
+              }
+              break;
+            } catch (DBException e) {
+              retryCount++;
+              if (retryCount == maxRetryCount) {
+                throw new WorkloadException(e);
+              }
+
+//              db.abort();
+//              throw new WorkloadException(e);
             }
-          } catch (DBException e) {
-            throw new WorkloadException(e);
           }
 
           opsdone++;
