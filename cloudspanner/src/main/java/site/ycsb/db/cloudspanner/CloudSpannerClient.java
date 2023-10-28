@@ -291,18 +291,30 @@ public class CloudSpannerClient extends DB {
           .bind("count").to(recordCount)
           .build();
     }
-    try (ResultSet resultSet = tx.executeQuery(query)) {
+
+    while (true) {
+      try (ResultSet resultSet = tx.executeQuery(query)) {
 //    try (ResultSet resultSet = dbClient.singleUse(timestampBound).executeQuery(query)) {
-      while (resultSet.next()) {
-        HashMap<String, ByteIterator> row = new HashMap<>();
-        decodeStruct(columns, resultSet, row);
-        result.add(row);
+        while (resultSet.next()) {
+          HashMap<String, ByteIterator> row = new HashMap<>();
+          decodeStruct(columns, resultSet, row);
+          result.add(row);
+        }
+        break;
+      } catch (AbortedException ae) {
+        try {
+          Thread.sleep(ae.getRetryDelayInMillis() / 1000);
+          tx = transactionManager.resetForRetry();
+        } catch (InterruptedException ie) {
+          System.err.println("Sleep was interrupted: " + ie.getMessage());
+          break;
+        }
+      } catch (Exception e) {
+        LOGGER.log(Level.INFO, "scanUsingQuery()", e);
+        return Status.ERROR;
       }
-      return Status.OK;
-    } catch (Exception e) {
-      LOGGER.log(Level.INFO, "scanUsingQuery()", e);
-      return Status.ERROR;
     }
+    return Status.OK;
   }
 
   @Override
