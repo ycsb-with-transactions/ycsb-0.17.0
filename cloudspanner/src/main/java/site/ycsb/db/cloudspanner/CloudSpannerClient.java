@@ -234,7 +234,7 @@ public class CloudSpannerClient extends DB {
       try (ResultSet resultSet = tx.executeQuery(query)) {
 //    try (ResultSet resultSet = dbClient.singleUse(timestampBound).executeQuery(query)) {
         boolean status = resultSet.next();
-        decodeStruct(columns, resultSet, result, status);
+        decodeStruct(columns, resultSet, result, status, key);
         if (resultSet.next()) {
           throw new Exception("Expected exactly one row for each read.");
         }
@@ -318,16 +318,14 @@ public class CloudSpannerClient extends DB {
   }
 
   private static void decodeStruct(
-      Iterable<String> columns, StructReader structReader, Map<String, ByteIterator> result, boolean nextStatus) {
+      Iterable<String> columns, StructReader structReader, Map<String, ByteIterator> result, boolean nextStatus, String key) {
     boolean hasErr = false;
-    int idx = 0;
     for (String col : columns) {
       try {
         result.put(col, new StringByteIterator(structReader.getString(col)));
       } catch (IndexOutOfBoundsException e) {
-        System.err.println("\n========= Error processing column: " + col);
-        System.err.println("\n next() status: " + nextStatus + " and Count: " + idx + " ===========\n");
-        idx ++;
+        System.err.println("\n========= Error processing column: " + col +
+            "\n next() status: " + nextStatus + " and Key: " + key + " ===========\n");
         hasErr = true;
       }
     }
