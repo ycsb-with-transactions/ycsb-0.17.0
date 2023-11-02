@@ -234,7 +234,8 @@ public class CloudSpannerClient extends DB {
       try (ResultSet resultSet = tx.executeQuery(query)) {
 //    try (ResultSet resultSet = dbClient.singleUse(timestampBound).executeQuery(query)) {
         boolean status = resultSet.next();
-        decodeStruct(columns, resultSet, result, status, key);
+        decodeStruct(columns, resultSet, result);
+//        decodeStruct(columns, resultSet, result, status, key);
         if (resultSet.next()) {
           throw new Exception("Expected exactly one row for each read.");
         }
