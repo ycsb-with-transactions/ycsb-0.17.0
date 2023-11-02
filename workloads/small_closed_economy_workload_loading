@@ -20,10 +20,10 @@ workload=site.ycsb.workloads.ClosedEconomyWorkload
 
 totalCash=100
 
-readProportion=0.5
-updateProportion=0.5
+readProportion=0.8
+updateProportion=0
 scanProportion=0
-insertProportion=0.0
+insertProportion=0.2
 readModifyWriteProportion=0
 
 requestDistribution=zipfian
