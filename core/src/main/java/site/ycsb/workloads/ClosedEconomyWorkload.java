@@ -634,10 +634,15 @@ public class ClosedEconomyWorkload extends Workload {
         secondValues.put("field0",
             new StringByteIterator(Long.toString(secondamount)));
 
-        if (db.update(table, firstKey, firstValues).isOk() ||
-            db.update(table, secondKey, secondValues).isOk()) {
-          System.err.println("Returning from OR");
-          return true;
+//        if (db.update(table, firstKey, firstValues).isOk() ||
+//            db.update(table, secondKey, secondValues).isOk()) {
+////          System.err.println("Returning from OR");
+//          return true;
+//        }
+
+        if (!db.update(table, firstKey, firstValues).isOk() ||
+            !db.update(table, secondKey, secondValues).isOk()) {
+          return false;
         }
 
         long en = System.currentTimeMillis();
@@ -647,7 +652,7 @@ public class ClosedEconomyWorkload extends Workload {
       } catch (NumberFormatException e) {
         return false;
       }
-      System.err.println("Returning from outside block");
+//      System.err.println("Returning from outside block");
       return true;
     }
     return false;
