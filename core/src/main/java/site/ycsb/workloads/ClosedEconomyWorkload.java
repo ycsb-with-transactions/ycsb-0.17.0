@@ -718,10 +718,13 @@ public class ClosedEconomyWorkload extends Workload {
     for (long i = 0; i < recordCount; i++) {
       String keyname = buildKeyName(validationKeySequence.nextValue().longValue());
       try {
-        db.start();
+//        db.start();
         db.read(table, keyname, fields, values);
-        db.commit();
-      } catch (DBException e) {
+//        db.commit();
+//      } catch (DBException e) {
+//        throw new WorkloadException(e);
+//      }
+      } catch (Exception e) {
         throw new WorkloadException(e);
       }
       counted_sum += Long.parseLong(values.get("field0").toString());
