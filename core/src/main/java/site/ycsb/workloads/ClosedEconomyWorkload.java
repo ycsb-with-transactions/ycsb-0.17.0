@@ -636,6 +636,7 @@ public class ClosedEconomyWorkload extends Workload {
 
         if (db.update(table, firstKey, firstValues).isOk() ||
             db.update(table, secondKey, secondValues).isOk()) {
+          System.err.println("Returning from OR");
           return true;
         }
 
@@ -646,6 +647,7 @@ public class ClosedEconomyWorkload extends Workload {
       } catch (NumberFormatException e) {
         return false;
       }
+      System.err.println("Returning from outside block");
       return true;
     }
     return false;
