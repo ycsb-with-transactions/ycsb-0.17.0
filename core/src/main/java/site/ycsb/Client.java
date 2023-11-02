@@ -379,6 +379,7 @@ public final class Client {
           }
         }
 
+
         workload.cleanup();
       }
     } catch (WorkloadException e) {

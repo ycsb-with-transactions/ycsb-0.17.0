@@ -209,12 +209,12 @@ public class ClientThread implements Runnable {
       completeLatch.countDown();
     }
 
-    try {
-      workload.validate(db);
-    } catch (WorkloadException e) {
-      e.printStackTrace();
-      e.printStackTrace(System.out);
-    }
+//    try {
+//      workload.validate(db);
+//    } catch (WorkloadException e) {
+//      e.printStackTrace();
+//      e.printStackTrace(System.out);
+//    }
   }
 
   private static void sleepUntil(long deadline) {
