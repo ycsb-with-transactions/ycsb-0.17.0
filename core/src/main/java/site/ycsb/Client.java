@@ -383,25 +383,27 @@ public final class Client {
           DB db = DBFactory.newDB(dbname,props, tracer);
           db.init();
           if (workload.validate(db))
-            System.out.println("Database validation succeeded");
+            System.err.println("Database validation succeeded");
           else
-            System.out.println("Database validation failed");
+            System.err.println("Database validation failed");
         } catch (WorkloadException e) {
-          System.out.println("Database validation failed with error: " + e.getMessage());
+          System.err.println("Database validation failed with error: " + e.getMessage());
+          e.printStackTrace();
+          e.printStackTrace(System.err);
         } catch (UnknownDBException e) {
           // TODO Auto-generated catch block
           e.printStackTrace();
-          e.printStackTrace(System.out);
+          e.printStackTrace(System.err);
         } catch (DBException e) {
           e.printStackTrace();
-          e.printStackTrace(System.out);
+          e.printStackTrace(System.err);
         }
 
         workload.cleanup();
       }
     } catch (WorkloadException e) {
       e.printStackTrace();
-      e.printStackTrace(System.out);
+      e.printStackTrace(System.err);
       System.exit(0);
     }
 
