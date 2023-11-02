@@ -614,7 +614,7 @@ public class ClosedEconomyWorkload extends Workload {
     HashMap<String, ByteIterator> secondValues = buildValues();
 
     // do the transaction
-    long st = System.currentTimeMillis();
+    long st = System.nanoTime();
 
     if (db.read(table, firstKey, fields, firstValues).isOk() && db.read(table, secondKey, fields,
         secondValues).isOk()) {
@@ -645,10 +645,10 @@ public class ClosedEconomyWorkload extends Workload {
           return false;
         }
 
-        long en = System.currentTimeMillis();
+        long en = System.nanoTime();
 
         Measurements.getMeasurements().measure("READ-MODIFY-WRITE",
-            (int) (en - st));
+            (int) (en - st) / 1000);
       } catch (NumberFormatException e) {
         return false;
       }
