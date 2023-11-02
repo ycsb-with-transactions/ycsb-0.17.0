@@ -208,6 +208,13 @@ public class ClientThread implements Runnable {
     } finally {
       completeLatch.countDown();
     }
+
+    try {
+      workload.validate(db);
+    } catch (WorkloadException e) {
+      e.printStackTrace();
+      e.printStackTrace(System.out);
+    }
   }
 
   private static void sleepUntil(long deadline) {
