@@ -52,13 +52,13 @@ run_ycsb() {
     local phase="$1"
     local workload="$2"
     local suffix="$3"
-    ../bin/ycsb.sh run cloudspanner -P ../cloudspanner/conf/cloudspanner.properties -P "../workloads/${workload}" -p recordcount=${recordcount} -p operationcount=1000000 -p measurementtype=timeseries -threads ${threads} -s > "../out/run-${counts_naming}-${cpu_count}-${threads}t-${suffix}.csv"
+    ../bin/ycsb.sh run cloudspanner -P ../conf/cloudspanner.properties -P "../workloads/${workload}" -p recordcount=${recordcount} -p operationcount=1000000 -p measurementtype=timeseries -threads ${threads} -s > "../out/run-${counts_naming}-${cpu_count}-${threads}t-${suffix}.csv"
     echo -e "\nFinished tests on ${phase}..\n"
 }
 
 # Load Phase
-../bin/ycsb.sh load cloudspanner -P ../cloudspanner/conf/cloudspanner.properties -P ../workloads/workloada -p recordcount=${recordcount} -p cloudspanner.batchinserts=1000 -p cloudspanner.insertorder=ordered -p measurementtype=timeseries -threads ${threads} -s > "../out/load-${counts_naming}-${cpu_count}-${threads}t.csv"
-echo -e "\nFinished loading entries to database..\n"
+#../bin/ycsb.sh load cloudspanner -P ../conf/cloudspanner.properties -P ../workloads/workloada -p recordcount=${recordcount} -p cloudspanner.batchinserts=1000 -p cloudspanner.insertorder=ordered -p measurementtype=timeseries -threads ${threads} -s > "../out/load-${counts_naming}-${cpu_count}-${threads}t.csv"
+#echo -e "\nFinished loading entries to database..\n"
 
 # Run Phases
 echo -e "**************************************\nStart running test on Plan A...\n"
