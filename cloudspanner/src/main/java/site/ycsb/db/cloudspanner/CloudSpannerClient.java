@@ -195,7 +195,6 @@ public class CloudSpannerClient extends DB {
           project = spanner.getOptions().getProjectId();
         }
         dbClient = spanner.getDatabaseClient(DatabaseId.of(project, instance, database));
-//        transactionManager = dbClient.transactionManager();
       } catch (Exception e) {
         LOGGER.log(Level.SEVERE, "init()", e);
         throw new DBException(e);
@@ -232,10 +231,8 @@ public class CloudSpannerClient extends DB {
 
     while (true) {
       try (ResultSet resultSet = tx.executeQuery(query)) {
-//    try (ResultSet resultSet = dbClient.singleUse(timestampBound).executeQuery(query)) {
-        boolean status = resultSet.next();
+        resultSet.next();
         decodeStruct(columns, resultSet, result);
-//        decodeStruct(columns, resultSet, result, status, key);
         if (resultSet.next()) {
           throw new Exception("Expected exactly one row for each read.");
         }
@@ -264,7 +261,6 @@ public class CloudSpannerClient extends DB {
     }
     Iterable<String> columns = fields == null ? STANDARD_FIELDS : fields;
     try {
-//      Struct row = dbClient.singleUse(timestampBound).readRow(table, Key.of(key), columns);
       Struct row = tx.readRow(table, Key.of(key), columns);
       decodeStruct(columns, row, result);
       return Status.OK;
@@ -295,7 +291,6 @@ public class CloudSpannerClient extends DB {
 
     while (true) {
       try (ResultSet resultSet = tx.executeQuery(query)) {
-//    try (ResultSet resultSet = dbClient.singleUse(timestampBound).executeQuery(query)) {
         while (resultSet.next()) {
           HashMap<String, ByteIterator> row = new HashMap<>();
           decodeStruct(columns, resultSet, row);
@@ -345,9 +340,7 @@ public class CloudSpannerClient extends DB {
     Iterable<String> columns = fields == null ? STANDARD_FIELDS : fields;
     KeySet keySet =
         KeySet.newBuilder().addRange(KeyRange.closedClosed(Key.of(startKey), Key.of())).build();
-    try (ResultSet resultSet = tx
-//    try (ResultSet resultSet = dbClient.singleUse(timestampBound)
-                                       .read(table, keySet, columns, Options.limit(recordCount))) {
+    try (ResultSet resultSet = tx.read(table, keySet, columns, Options.limit(recordCount))) {
       while (resultSet.next()) {
         HashMap<String, ByteIterator> row = new HashMap<>();
         decodeStruct(columns, resultSet, row);
@@ -368,7 +361,6 @@ public class CloudSpannerClient extends DB {
       m.set(e.getKey()).to(e.getValue().toString());
     }
     try {
-//      dbClient.writeAtLeastOnce(Arrays.asList(m.build()));
       tx.buffer(Arrays.asList(m.build()));
     } catch (Exception e) {
       LOGGER.log(Level.INFO, "update()", e);
@@ -394,14 +386,12 @@ public class CloudSpannerClient extends DB {
       return Status.BATCHED_OK;
     }
     try {
-//      dbClient.writeAtLeastOnce(bufferedMutations);
       tx.buffer(bufferedMutations);
       bufferedMutations.clear();
     } catch (Exception e) {
       LOGGER.log(Level.INFO, "insert()", e);
       return Status.ERROR;
     }
-//    bufferedMutations.clear();
     return Status.OK;
   }
 
@@ -409,9 +399,6 @@ public class CloudSpannerClient extends DB {
   public void cleanup() {
     try {
       if (bufferedMutations.size() > 0) {
-//        dbClient.writeAtLeastOnce(bufferedMutations);
-//        tx.buffer(bufferedMutations);
-//        bufferedMutations.clear();
         transactionManager = dbClient.transactionManager();
         tx = transactionManager.begin();
         tx.buffer(bufferedMutations);
@@ -421,14 +408,12 @@ public class CloudSpannerClient extends DB {
     } catch (Exception e) {
       LOGGER.log(Level.INFO, "cleanup()", e);
     }
-//    bufferedMutations.clear();
   }
 
   @Override
   public Status delete(String table, String key) {
     try {
       tx.buffer(Arrays.asList(Mutation.delete(table, Key.of(key))));
-//      dbClient.writeAtLeastOnce(Arrays.asList(Mutation.delete(table, Key.of(key))));
     } catch (Exception e) {
       LOGGER.log(Level.INFO, "delete()", e);
       return Status.ERROR;
@@ -447,35 +432,17 @@ public class CloudSpannerClient extends DB {
   public void start() throws DBException {
     super.start();
     transactionManager = dbClient.transactionManager();
-//    System.err.println("*********** Manager comes **************");
     tx = transactionManager.begin();
-//    System.err.println("=================  Begin  ====================");
   }
 
   @Override
   public void commit() throws DBException {
     super.commit();
-//    System.err.println("=================  Commit Begin  ====================");
-
-//    transactionManager.commit();
-
-//    while (true) {
     try {
       transactionManager.commit();
-//      break;
     } catch (AbortedException e) {
       throw new DBException("Commit() in Spanner, throwing DB Exception...", e);
-//      try {
-//        Thread.sleep(e.getRetryDelayInMillis() / 1000);
-//        tx = transactionManager.resetForRetry();
-//      } catch (InterruptedException ie) {
-//        System.err.println("Sleep was interrupted: " + ie.getMessage());
-//        break;
       }
-//    }
-//    }
-
-//    System.err.println("=================  Commit Ends  ====================");
   }
 
   @Override

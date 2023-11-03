@@ -652,7 +652,6 @@ public class ClosedEconomyWorkload extends Workload {
       } catch (NumberFormatException e) {
         return false;
       }
-//      System.err.println("Returning from outside block");
       return true;
     }
     return false;

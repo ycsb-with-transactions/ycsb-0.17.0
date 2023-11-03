@@ -119,9 +119,6 @@ public class ClientThread implements Runnable {
 
         while (((opcount == 0) || (opsdone < opcount)) && !workload.isStopRequested()) {
 
-//          if (!workload.doTransaction(db, workloadstate)) {
-//            break;
-//          }
           int maxRetryCount = 3;
           int retryCount = 0;
           while (retryCount < maxRetryCount) {
@@ -138,8 +135,6 @@ public class ClientThread implements Runnable {
               if (retryCount == maxRetryCount) {
                 throw new WorkloadException(e);
               }
-//              db.abort();
-//              throw new WorkloadException(e);
             }
           }
 
@@ -151,21 +146,6 @@ public class ClientThread implements Runnable {
         long startTimeNanos = System.nanoTime();
 
         while (((opcount == 0) || (opsdone < opcount)) && !workload.isStopRequested()) {
-
-//          if (!workload.doInsert(db, workloadstate)) {
-//            break;
-//          }
-
-//          try {
-//            db.start();
-//            if (workload.doInsert(db, workloadstate)) {
-//              db.commit();
-//            } else {
-//              db.abort();
-//            }
-//          } catch (DBException e) {
-//            throw new WorkloadException(e);
-//          }
           int maxRetryCount = 3;
           int retryCount = 0;
           while (retryCount < maxRetryCount) {
@@ -182,9 +162,6 @@ public class ClientThread implements Runnable {
               if (retryCount == maxRetryCount) {
                 throw new WorkloadException(e);
               }
-
-//              db.abort();
-//              throw new WorkloadException(e);
             }
           }
 
@@ -208,13 +185,6 @@ public class ClientThread implements Runnable {
     } finally {
       completeLatch.countDown();
     }
-
-//    try {
-//      workload.validate(db);
-//    } catch (WorkloadException e) {
-//      e.printStackTrace();
-//      e.printStackTrace(System.out);
-//    }
   }
 
   private static void sleepUntil(long deadline) {
