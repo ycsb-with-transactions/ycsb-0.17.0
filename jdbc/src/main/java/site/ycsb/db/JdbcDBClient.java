@@ -243,6 +243,7 @@ public class JdbcDBClient extends DB {
     super.start();
     try {
       conns.get(0).setAutoCommit(false);
+      autoCommit = false;
     } catch (SQLException e) {
       e.printStackTrace();
       throw new DBException(e);

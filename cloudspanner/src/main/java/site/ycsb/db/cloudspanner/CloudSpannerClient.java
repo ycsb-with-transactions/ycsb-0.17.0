@@ -313,22 +313,6 @@ public class CloudSpannerClient extends DB {
     return Status.OK;
   }
 
-  private static void decodeStruct(
-      Iterable<String> columns, StructReader structReader, Map<String, ByteIterator> result, boolean nextStatus, String key) {
-    boolean hasErr = false;
-    for (String col : columns) {
-      try {
-        result.put(col, new StringByteIterator(structReader.getString(col)));
-      } catch (IndexOutOfBoundsException e) {
-        System.err.println("\n========= Error processing column: " + col +
-            "\n next() status: " + nextStatus + " and Key: " + key + " ===========\n");
-        hasErr = true;
-      }
-    }
-    if (!hasErr && !nextStatus) {
-      System.err.println("\n Status is " + nextStatus + " \n");
-    }
-  }
 
   @Override
   public Status scan(
