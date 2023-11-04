@@ -65,43 +65,20 @@ LICENSE file.
       <artifactId>mysql-connector-j</artifactId>
       <version>8.1.0</version>
     </dependency>
+
     <!-- https://mvnrepository.com/artifact/com.google.cloud/google-cloud-spanner-jdbc -->
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner-jdbc</artifactId>
       <version>${google-cloud-spanner-jdbc.version}</version>
     </dependency>
+
     <dependency>
       <groupId>com.google.cloud</groupId>
-      <artifactId>google-cloud-spanner</artifactId>
-      <version>${cloudspanner.version}</version>
-      <exclusions>
-        <exclusion> <!-- exclude an old version of Guava -->
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava-jdk5</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <!-- https://mvnrepository.com/artifact/com.google.api.grpc/proto-google-cloud-spanner-v1 -->
-    <dependency>
-      <groupId>com.google.api.grpc</groupId>
-      <artifactId>proto-google-cloud-spanner-v1</artifactId>
-      <version>6.52.1</version>
-    </dependency>
-
-    <!-- https://mvnrepository.com/artifact/com.google.api.grpc/grpc-google-cloud-spanner-v1 -->
-    <dependency>
-      <groupId>com.google.api.grpc</groupId>
-      <artifactId>grpc-google-cloud-spanner-v1</artifactId>
-      <version>6.52.1</version>
-    </dependency>
-
-    <!-- https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java -->
-    <dependency>
-      <groupId>com.google.protobuf</groupId>
-      <artifactId>protobuf-java</artifactId>
-      <version>4.0.0-rc-2</version>
+      <artifactId>libraries-bom</artifactId>
+      <version>26.26.0</version>
+      <type>pom</type>
+      <scope>import</scope>
     </dependency>
 
   </dependencies>
