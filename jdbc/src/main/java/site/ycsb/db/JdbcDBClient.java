@@ -16,6 +16,8 @@
  */
 package site.ycsb.db;
 
+import com.google.cloud.spanner.AbortedException;
+import com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory;
 import site.ycsb.DB;
 import site.ycsb.DBException;
 import site.ycsb.ByteIterator;
@@ -245,34 +247,31 @@ public class JdbcDBClient extends DB {
       conns.get(0).setAutoCommit(false);
       autoCommit = false;
     } catch (SQLException e) {
-      e.printStackTrace();
+//      e.printStackTrace();
       throw new DBException(e);
     }
-    System.err.println("Start in JDBC.");
   }
 
   @Override
   public void commit() throws DBException {
     super.commit();
-//    System.out.println("Commit in JDBC.");
     try {
       conns.get(0).commit();
-      System.err.println("** Commit in JDBC. **" + "        " + conns.size());
+    } catch (JdbcSqlExceptionFactory.JdbcAbortedException ae) {
+      throw new DBException(ae);
     } catch (SQLException e) {
       e.printStackTrace();
       throw new DBException(e);
     }
-    System.err.println("** Finished commit in JDBC. **");
   }
 
   @Override
   public void abort() throws DBException {
     super.abort();
-    System.out.println("Abort in JDBC.");
     try {
       conns.get(0).rollback();
     } catch (SQLException e) {
-      e.printStackTrace();
+//      e.printStackTrace();
       throw new DBException(e);
     }
   }
@@ -511,7 +510,7 @@ public class JdbcDBClient extends DB {
         }
       }
       return Status.UNEXPECTED_STATE;
-    } catch (SQLException e) {
+    }  catch (SQLException e) {
       System.err.println("Error in processing insert to table: " + tableName + e);
       return Status.ERROR;
     }

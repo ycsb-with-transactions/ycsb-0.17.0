@@ -425,8 +425,8 @@ public class CloudSpannerClient extends DB {
     try {
       transactionManager.commit();
     } catch (AbortedException e) {
-      throw new DBException("Commit() in Spanner, throwing DB Exception...", e);
-      }
+      throw new DBException(e);
+    }
   }
 
   @Override
