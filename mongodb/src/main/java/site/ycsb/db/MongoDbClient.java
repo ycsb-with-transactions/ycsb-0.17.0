@@ -175,7 +175,7 @@ public class MongoDbClient extends DB {
       Properties props = getProperties();
 
       // Set insert batchsize, default 1 - to be YCSB-original equivalent
-      batchSize = Integer.parseInt(props.getProperty("batchsize", "1"));
+      batchSize = Integer.parseInt(props.getProperty("batchsize", "5"));
 
       // Set is inserts are done as upserts. Defaults to false.
       useUpsert = Boolean.parseBoolean(
