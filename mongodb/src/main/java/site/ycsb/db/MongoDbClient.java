@@ -117,7 +117,7 @@ public class MongoDbClient extends DB {
   public void cleanup() throws DBException {
     if (INIT_COUNT.decrementAndGet() == 0) {
       try {
-        session.close();
+        // session.close();
         mongoClient.close();
       } catch (Exception e1) {
         System.err.println("Could not close MongoDB connection pool: "
@@ -478,10 +478,12 @@ public class MongoDbClient extends DB {
   @Override
   public void commit(){
     session.commitTransaction();
+    session.close();
   }
 
   @Override
   public void abort(){
     session.abortTransaction();
+    session.close();
   }
 }
