@@ -117,7 +117,7 @@ public class MongoDbClient extends DB {
   public void cleanup() throws DBException {
     if (INIT_COUNT.decrementAndGet() == 0) {
       try {
-        // session.close();
+        session.close();
         mongoClient.close();
       } catch (Exception e1) {
         System.err.println("Could not close MongoDB connection pool: "
@@ -175,7 +175,7 @@ public class MongoDbClient extends DB {
       Properties props = getProperties();
 
       // Set insert batchsize, default 1 - to be YCSB-original equivalent
-      batchSize = Integer.parseInt(props.getProperty("batchsize", "5"));
+      batchSize = Integer.parseInt(props.getProperty("batchsize", "1"));
 
       // Set is inserts are done as upserts. Defaults to false.
       useUpsert = Boolean.parseBoolean(
@@ -223,7 +223,7 @@ public class MongoDbClient extends DB {
                 .withReadPreference(readPreference)
                 .withWriteConcern(writeConcern);
 
-        // session = mongoClient.startSession();
+        session = mongoClient.startSession();
 
         System.out.println("mongo client connection created with " + url);
       } catch (Exception e1) {
@@ -471,19 +471,16 @@ public class MongoDbClient extends DB {
 
   @Override
   public void start(){
-    session = mongoClient.startSession();
     session.startTransaction(TransactionOptions.builder().writeConcern(WriteConcern.MAJORITY).build());
   }
 
   @Override
   public void commit(){
     session.commitTransaction();
-    session.close();
   }
 
   @Override
   public void abort(){
     session.abortTransaction();
-    session.close();
   }
 }
