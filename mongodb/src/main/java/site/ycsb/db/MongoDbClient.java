@@ -107,7 +107,7 @@ public class MongoDbClient extends DB {
   private final List<Document> bulkInserts = new ArrayList<Document>();
 
   /** MongoDB client session */
-  private static ClientSession session;
+  private ClientSession session;
 
   /**
    * Cleanup any state for this DB. Called once per DB instance; there is one DB
