@@ -223,7 +223,7 @@ public class MongoDbClient extends DB {
                 .withReadPreference(readPreference)
                 .withWriteConcern(writeConcern);
 
-        session = mongoClient.startSession();
+        // session = mongoClient.startSession();
 
         System.out.println("mongo client connection created with " + url);
       } catch (Exception e1) {
@@ -471,6 +471,7 @@ public class MongoDbClient extends DB {
 
   @Override
   public void start(){
+    session = mongoClient.startSession();
     session.startTransaction(TransactionOptions.builder().writeConcern(WriteConcern.MAJORITY).build());
   }
 
