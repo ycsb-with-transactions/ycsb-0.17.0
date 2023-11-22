@@ -718,23 +718,6 @@ public class ClosedEconomyWorkload extends Workload {
    * @throws WorkloadException
    */
   public boolean validate(DB db) throws WorkloadException {
-//    HashSet<String> fields = new HashSet<>();
-//    fields.add("field0");
-//    System.out.println("Validating data");
-//    HashMap<String, ByteIterator> values = new HashMap<>();
-//    long counted_sum = 0;
-//    for (long i = 0; i < recordCount; i++) {
-//      String keyname = buildKeyName(validationKeySequence.nextValue().longValue());
-//      try {
-//        db.start();
-//        db.read(table, keyname, fields, values);
-//        db.commit();
-//      } catch (DBException e) {
-//        throw new WorkloadException(e);
-//      }
-//      counted_sum += Long.parseLong(values.get("field0").toString());
-//    }
-
     long counted_sum;
     System.out.println("Validating data...");
     try {
@@ -756,6 +739,8 @@ public class ClosedEconomyWorkload extends Workload {
       System.err.println("[ANOMALY SCORE], " + Math.abs((totalCash - counted_sum) / (1.0 * count)));
       return false;
     } else {
+      System.out.println("[TOTAL CASH], " + totalCash);
+      System.out.println("[COUNTED CASH], " + counted_sum);
       return true;
     }
   }
