@@ -169,8 +169,8 @@ public class DBWrapper extends DB {
     }
 	}
 
-  public long validate(String field) throws DBException {
-      return db.validate(field);
+  public long validate() throws DBException {
+      return db.validate();
   }
 
   /**

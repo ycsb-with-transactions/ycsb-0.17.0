@@ -133,7 +133,7 @@ public class CloudSpannerClient extends DB {
     standardScan = new StringBuilder()
         .append("SELECT * FROM ").append(table).append(" WHERE id>=@startKey LIMIT @count").toString();
     standardValidate = new StringBuilder()
-        .append("SELECT SUM(@field) FROM ").append(table).toString();
+        .append("SELECT SUM(field0) FROM ").append(table).toString();
     for (int i = 0; i < fieldCount; i++) {
       STANDARD_FIELDS.add(fieldprefix + i);
     }
@@ -440,10 +440,11 @@ public class CloudSpannerClient extends DB {
   }
 
   @Override
-  public long validate(String field) throws DBException {
-    super.validate(field);
+  public long validate() throws DBException {
+    super.validate();
     long countedSum;
-    Statement query = Statement.newBuilder(standardValidate).bind("filed").to(field).build();
+
+    Statement query = Statement.newBuilder(standardValidate).build();
 
     try (ResultSet resultSet = dbClient.singleUse(timestampBound).executeQuery(query)) {
       resultSet.next();

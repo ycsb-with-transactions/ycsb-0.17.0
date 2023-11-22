@@ -733,11 +733,10 @@ public class ClosedEconomyWorkload extends Workload {
 //      counted_sum += Long.parseLong(values.get("field0").toString());
 //    }
 
-    String field = "field0";
     long counted_sum;
     System.out.println("Validating data...");
     try {
-      counted_sum = db.validate(field);
+      counted_sum = db.validate();
     } catch(Exception e) {
       throw new WorkloadException(e);
     }
