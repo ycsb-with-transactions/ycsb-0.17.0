@@ -254,6 +254,9 @@ public class ClosedEconomyWorkload extends Workload {
    * Default value of the percentage operations accessing the hot set.
    */
   public static final String HOTSPOT_OPN_FRACTION_DEFAULT = "0.8";
+
+  public static String DEFAULT_FIELD = "field0";
+
   public static String table;
   long fieldCount;
   /**
@@ -454,7 +457,7 @@ public class ClosedEconomyWorkload extends Workload {
   HashMap<String, ByteIterator> buildValues() {
     HashMap<String, ByteIterator> values = new HashMap<>();
 
-    String fieldKey = "field0";
+    String fieldKey = DEFAULT_FIELD;
     ByteIterator data = new StringByteIterator("" + initialValue);
     values.put(fieldKey, data);
     return values;
@@ -618,9 +621,9 @@ public class ClosedEconomyWorkload extends Workload {
     if (db.read(table, firstKey, fields, firstValues).isOk() && db.read(table, secondKey, fields,
         secondValues).isOk()) {
       try {
-        long firstamount = Long.parseLong(firstValues.get("field0")
+        long firstamount = Long.parseLong(firstValues.get(DEFAULT_FIELD)
             .toString());
-        long secondamount = Long.parseLong(secondValues.get("field0")
+        long secondamount = Long.parseLong(secondValues.get(DEFAULT_FIELD)
             .toString());
 
         if (firstamount > 0) {
@@ -628,9 +631,9 @@ public class ClosedEconomyWorkload extends Workload {
           secondamount++;
         }
 
-        firstValues.put("field0",
+        firstValues.put(DEFAULT_FIELD,
             new StringByteIterator(Long.toString(firstamount)));
-        secondValues.put("field0",
+        secondValues.put(DEFAULT_FIELD,
             new StringByteIterator(Long.toString(secondamount)));
 
 //        if (db.update(table, firstKey, firstValues).isOk() ||
