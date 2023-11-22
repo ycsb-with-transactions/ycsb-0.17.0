@@ -716,21 +716,34 @@ public class ClosedEconomyWorkload extends Workload {
    * @throws WorkloadException
    */
   public boolean validate(DB db) throws WorkloadException {
-    HashSet<String> fields = new HashSet<>();
-    fields.add("field0");
-    System.out.println("Validating data");
-    HashMap<String, ByteIterator> values = new HashMap<>();
-    long counted_sum = 0;
-    for (long i = 0; i < recordCount; i++) {
-      String keyname = buildKeyName(validationKeySequence.nextValue().longValue());
-      try {
-        db.start();
-        db.read(table, keyname, fields, values);
-        db.commit();
-      } catch (DBException e) {
-        throw new WorkloadException(e);
-      }
-      counted_sum += Long.parseLong(values.get("field0").toString());
+//    HashSet<String> fields = new HashSet<>();
+//    fields.add("field0");
+//    System.out.println("Validating data");
+//    HashMap<String, ByteIterator> values = new HashMap<>();
+//    long counted_sum = 0;
+//    for (long i = 0; i < recordCount; i++) {
+//      String keyname = buildKeyName(validationKeySequence.nextValue().longValue());
+//      try {
+//        db.start();
+//        db.read(table, keyname, fields, values);
+//        db.commit();
+//      } catch (DBException e) {
+//        throw new WorkloadException(e);
+//      }
+//      counted_sum += Long.parseLong(values.get("field0").toString());
+//    }
+
+    String field = "field0";
+    long counted_sum;
+    System.out.println("Validating data...");
+    try {
+      counted_sum = db.validate(field);
+    } catch(Exception e) {
+      throw new WorkloadException(e);
+    }
+    if (counted_sum == -1) {
+      System.err.println("No validation done due to no validate() implementation.");
+      return false;
     }
 
     if (counted_sum != totalCash) {

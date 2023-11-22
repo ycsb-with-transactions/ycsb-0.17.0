@@ -169,6 +169,10 @@ public class DBWrapper extends DB {
     }
 	}
 
+  public long validate(String field) throws DBException {
+      return db.validate(field);
+  }
+
   /**
    * Read a record from the database. Each field/value pair from the result
    * will be stored in a HashMap.

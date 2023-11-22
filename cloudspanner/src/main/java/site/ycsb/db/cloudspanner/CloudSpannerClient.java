@@ -100,6 +100,8 @@ public class CloudSpannerClient extends DB {
 
   private static String standardScan;
 
+  private static String standardValidate;
+
   private static final ArrayList<String> STANDARD_FIELDS = new ArrayList<>();
 
   private static final String PRIMARY_KEY_COLUMN = "id";
@@ -130,6 +132,8 @@ public class CloudSpannerClient extends DB {
         .append("SELECT * FROM ").append(table).append(" WHERE id=@key").toString();
     standardScan = new StringBuilder()
         .append("SELECT * FROM ").append(table).append(" WHERE id>=@startKey LIMIT @count").toString();
+    standardValidate = new StringBuilder()
+        .append("SELECT SUM(@field) FROM ").append(table).toString();
     for (int i = 0; i < fieldCount; i++) {
       STANDARD_FIELDS.add(fieldprefix + i);
     }
@@ -433,5 +437,24 @@ public class CloudSpannerClient extends DB {
   public void abort() throws DBException {
     super.abort();
     transactionManager.rollback();
+  }
+
+  @Override
+  public long validate(String field) throws DBException {
+    super.validate(field);
+    long countedSum;
+    Statement query = Statement.newBuilder(standardValidate).bind("filed").to(field).build();
+
+    try (ResultSet resultSet = dbClient.singleUse(timestampBound).executeQuery(query)) {
+      resultSet.next();
+      countedSum = resultSet.getLong(0);
+      if (resultSet.next()) {
+        throw new Exception("Expected exactly one row for validation.");
+      }
+      return countedSum;
+    } catch (Exception e) {
+      LOGGER.log(Level.INFO, "validate()", e);
+      throw new DBException(e);
+    }
   }
 }
