@@ -24,6 +24,7 @@ import site.ycsb.DB;
 import site.ycsb.DBException;
 import site.ycsb.Status;
 import site.ycsb.StringByteIterator;
+import site.ycsb.workloads.ClosedEconomyWorkload;
 import site.ycsb.workloads.CoreWorkload;
 
 import java.util.ArrayList;
@@ -128,12 +129,15 @@ public class CloudSpannerClient extends DB {
     String table = properties.getProperty(CoreWorkload.TABLENAME_PROPERTY, CoreWorkload.TABLENAME_PROPERTY_DEFAULT);
     final String fieldprefix = properties.getProperty(CoreWorkload.FIELD_NAME_PREFIX,
                                                       CoreWorkload.FIELD_NAME_PREFIX_DEFAULT);
+    String validateField = properties.getProperty(ClosedEconomyWorkload.DEFAULT_FIELD);
+    String validateTable = properties.getProperty(ClosedEconomyWorkload.TABLE_NAME_PROPERTY,
+        ClosedEconomyWorkload.TABLE_NAME_PROPERTY_DEFAULT);
     standardQuery = new StringBuilder()
         .append("SELECT * FROM ").append(table).append(" WHERE id=@key").toString();
     standardScan = new StringBuilder()
         .append("SELECT * FROM ").append(table).append(" WHERE id>=@startKey LIMIT @count").toString();
-    standardValidate = new StringBuilder()
-        .append("SELECT SUM(CAST(field0 AS INT64)) FROM ").append(table).toString();
+    standardValidate = new StringBuilder().append("SELECT SUM(CAST(").append(validateField)
+        .append(" AS INT64)) FROM ").append(validateTable).toString();
     for (int i = 0; i < fieldCount; i++) {
       STANDARD_FIELDS.add(fieldprefix + i);
     }
