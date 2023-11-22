@@ -129,8 +129,11 @@ public class CloudSpannerClient extends DB {
     String table = properties.getProperty(CoreWorkload.TABLENAME_PROPERTY, CoreWorkload.TABLENAME_PROPERTY_DEFAULT);
     final String fieldprefix = properties.getProperty(CoreWorkload.FIELD_NAME_PREFIX,
                                                       CoreWorkload.FIELD_NAME_PREFIX_DEFAULT);
-    String validateField = properties.getProperty(ClosedEconomyWorkload.DEFAULT_FIELD);
-    String validateTable = properties.getProperty(ClosedEconomyWorkload.TABLE_NAME_PROPERTY_DEFAULT);
+    String validateTable = properties.getProperty(ClosedEconomyWorkload.TABLE_NAME_PROPERTY,
+                                                  ClosedEconomyWorkload.TABLE_NAME_PROPERTY_DEFAULT);
+    String validateField = properties.getProperty(ClosedEconomyWorkload.FIELD_NAME,
+                                                  ClosedEconomyWorkload.DEFAULT_FIELD_NAME);
+
     standardQuery = new StringBuilder()
         .append("SELECT * FROM ").append(table).append(" WHERE id=@key").toString();
     standardScan = new StringBuilder()

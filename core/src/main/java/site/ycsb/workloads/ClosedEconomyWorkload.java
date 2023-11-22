@@ -255,7 +255,8 @@ public class ClosedEconomyWorkload extends Workload {
    */
   public static final String HOTSPOT_OPN_FRACTION_DEFAULT = "0.8";
 
-  public static String DEFAULT_FIELD = "field0";
+  public static String FIELD_NAME = "field";
+  public static String DEFAULT_FIELD_NAME = "field0";
 
   public static String table;
   long fieldCount;
@@ -457,7 +458,7 @@ public class ClosedEconomyWorkload extends Workload {
   HashMap<String, ByteIterator> buildValues() {
     HashMap<String, ByteIterator> values = new HashMap<>();
 
-    String fieldKey = DEFAULT_FIELD;
+    String fieldKey = DEFAULT_FIELD_NAME;
     ByteIterator data = new StringByteIterator("" + initialValue);
     values.put(fieldKey, data);
     return values;
@@ -621,9 +622,9 @@ public class ClosedEconomyWorkload extends Workload {
     if (db.read(table, firstKey, fields, firstValues).isOk() && db.read(table, secondKey, fields,
         secondValues).isOk()) {
       try {
-        long firstamount = Long.parseLong(firstValues.get(DEFAULT_FIELD)
+        long firstamount = Long.parseLong(firstValues.get(DEFAULT_FIELD_NAME)
             .toString());
-        long secondamount = Long.parseLong(secondValues.get(DEFAULT_FIELD)
+        long secondamount = Long.parseLong(secondValues.get(DEFAULT_FIELD_NAME)
             .toString());
 
         if (firstamount > 0) {
@@ -631,16 +632,10 @@ public class ClosedEconomyWorkload extends Workload {
           secondamount++;
         }
 
-        firstValues.put(DEFAULT_FIELD,
+        firstValues.put(DEFAULT_FIELD_NAME,
             new StringByteIterator(Long.toString(firstamount)));
-        secondValues.put(DEFAULT_FIELD,
+        secondValues.put(DEFAULT_FIELD_NAME,
             new StringByteIterator(Long.toString(secondamount)));
-
-//        if (db.update(table, firstKey, firstValues).isOk() ||
-//            db.update(table, secondKey, secondValues).isOk()) {
-////          System.err.println("Returning from OR");
-//          return true;
-//        }
 
         if (!db.update(table, firstKey, firstValues).isOk() ||
             !db.update(table, secondKey, secondValues).isOk()) {
