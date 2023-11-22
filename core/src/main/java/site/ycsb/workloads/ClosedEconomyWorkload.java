@@ -24,7 +24,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import site.ycsb.ByteIterator;
 import site.ycsb.Client;
 import site.ycsb.DB;
-import site.ycsb.DBException;
 import site.ycsb.RandomByteIterator;
 import site.ycsb.Status;
 import site.ycsb.StringByteIterator;

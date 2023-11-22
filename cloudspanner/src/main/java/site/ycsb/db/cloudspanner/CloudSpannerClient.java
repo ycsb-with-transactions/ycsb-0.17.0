@@ -133,7 +133,7 @@ public class CloudSpannerClient extends DB {
     standardScan = new StringBuilder()
         .append("SELECT * FROM ").append(table).append(" WHERE id>=@startKey LIMIT @count").toString();
     standardValidate = new StringBuilder()
-        .append("SELECT SUM(field0) FROM ").append(table).toString();
+        .append("SELECT SUM(CAST(field0 AS INT64)) FROM ").append(table).toString();
     for (int i = 0; i < fieldCount; i++) {
       STANDARD_FIELDS.add(fieldprefix + i);
     }
