@@ -14,11 +14,11 @@
 # LICENSE file.
 
 
-recordcount=50
-operationcount=500
+recordcount=10000
+operationcount=1000000
 workload=site.ycsb.workloads.ClosedEconomyWorkload
 
-totalCash=100
+totalCash=10000000
 
 readProportion=0.5
 updateProportion=0.5
