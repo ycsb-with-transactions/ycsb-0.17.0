@@ -21,14 +21,8 @@ import java.util.Hashtable;
 import java.util.Properties;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicInteger;
-import site.ycsb.ByteIterator;
-import site.ycsb.Client;
-import site.ycsb.DB;
-import site.ycsb.RandomByteIterator;
-import site.ycsb.Status;
-import site.ycsb.StringByteIterator;
-import site.ycsb.Workload;
-import site.ycsb.WorkloadException;
+
+import site.ycsb.*;
 import site.ycsb.generator.ConstantIntegerGenerator;
 import site.ycsb.generator.CounterGenerator;
 import site.ycsb.generator.DiscreteGenerator;
@@ -255,6 +249,13 @@ public class ClosedEconomyWorkload extends Workload {
    */
   public static final String HOTSPOT_OPN_FRACTION_DEFAULT = "0.8";
 
+  public static final String VALIDATE_BY_QUERY_PROPERTY = "validatebyquery";
+
+  /**
+   * The default value for the validateByQuery property.
+   */
+  public static final String VALIDATE_BY_QUERY_PROPERTY_DEFAULT = "true";
+
   public static String FIELD_NAME = "field";
   public static String DEFAULT_FIELD_NAME = "field0";
 
@@ -290,6 +291,7 @@ public class ClosedEconomyWorkload extends Workload {
   };
   private long totalCash;
   private long initialValue;
+  boolean validateByQuery;
 
   protected static NumberGenerator getFieldLengthGenerator(Properties p)
       throws WorkloadException {
@@ -445,6 +447,9 @@ public class ClosedEconomyWorkload extends Workload {
     }
 
     measurements = Measurements.getMeasurements();
+
+    validateByQuery = Boolean.parseBoolean(
+        p.getProperty(VALIDATE_BY_QUERY_PROPERTY, VALIDATE_BY_QUERY_PROPERTY_DEFAULT));
   }
 
   public String buildKeyName(long keyNum) {
@@ -706,6 +711,23 @@ public class ClosedEconomyWorkload extends Workload {
     return (db.insert(table, dbKey, values).isOk());
   }
 
+  private long validateByRead(DB db) throws DBException {
+    HashSet<String> fields = new HashSet<>();
+    fields.add(DEFAULT_FIELD_NAME);
+    HashMap<String, ByteIterator> values = new HashMap<>();
+    long counted_sum = 0;
+    for (long i = 0; i < recordCount; i++) {
+      String keyname = buildKeyName(validationKeySequence.nextValue().longValue());
+
+      db.start();
+      db.read(table, keyname, fields, values);
+      db.commit();
+
+      counted_sum += Long.parseLong(values.get(DEFAULT_FIELD_NAME).toString());
+    }
+    return counted_sum;
+  }
+
   /**
    * Perform validation of the database db after the workload has executed.
    *
@@ -716,7 +738,11 @@ public class ClosedEconomyWorkload extends Workload {
     long counted_sum;
     System.out.println("Validating data...");
     try {
-      counted_sum = db.validate();
+      if (validateByQuery) {
+        counted_sum = db.validate();
+      } else {
+        counted_sum = validateByRead(db);
+      }
     } catch(Exception e) {
       throw new WorkloadException(e);
     }
