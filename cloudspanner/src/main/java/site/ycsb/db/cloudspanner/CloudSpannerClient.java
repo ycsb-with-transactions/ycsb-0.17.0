@@ -442,7 +442,7 @@ public class CloudSpannerClient extends DB {
   @Override
   public void abort() throws DBException {
     super.abort();
-    transactionManager.rollback();
+    transactionManager.close();
   }
 
   @Override

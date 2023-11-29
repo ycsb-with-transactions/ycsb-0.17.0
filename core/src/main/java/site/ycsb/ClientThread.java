@@ -126,13 +126,12 @@ public class ClientThread implements Runnable {
               db.start();
               if (workload.doTransaction(db, workloadstate)) {
                 db.commit();
-              } else {
-                db.abort();
-              }
                 break;
+              }
             } catch (DBException e) {
               retryCount++;
               if (retryCount == maxRetryCount) {
+                db.abort();
                 throw new WorkloadException(e);
               }
             }
@@ -153,14 +152,13 @@ public class ClientThread implements Runnable {
               db.start();
               if (workload.doInsert(db, workloadstate)) {
                 db.commit();
-              } else {
-                db.abort();
+                break;
               }
-              break;
             } catch (DBException e) {
               System.err.println("Get aborts when inserting, retrying...");
               retryCount++;
               if (retryCount == maxRetryCount) {
+                db.abort();
                 throw new WorkloadException(e);
               }
             }
