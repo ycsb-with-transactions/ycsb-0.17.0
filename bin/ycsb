@@ -89,6 +89,7 @@ DATABASES = {
     "infinispan-cs": "site.ycsb.db.InfinispanRemoteClient",
     "infinispan"   : "site.ycsb.db.InfinispanClient",
     "jdbc"         : "site.ycsb.db.JdbcDBClient",
+    "cockroachdb"  : "site.ycsb.db.CockroachDBClient",
     "kudu"         : "site.ycsb.db.KuduYCSBClient",
     "memcached"    : "site.ycsb.db.MemcachedClient",
     "maprdb"       : "site.ycsb.db.mapr.MapRDBClient",

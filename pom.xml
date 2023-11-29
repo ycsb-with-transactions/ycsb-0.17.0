@@ -176,6 +176,7 @@ LICENSE file.
     <module>azuretablestorage</module>
     <module>cassandra</module>
     <module>cloudspanner</module>
+    <module>cockroachdb</module>
     <module>couchbase</module>
 		<module>couchbase2</module>
 		<module>crail</module>
