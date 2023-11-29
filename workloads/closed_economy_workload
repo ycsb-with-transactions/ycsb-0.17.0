@@ -37,10 +37,10 @@ scanProportion=0
 insertProportion=0
 readModifyWriteProportion=0.5
 
-requestDistribution=zipfian
+#requestDistribution=zipfian
 zipfianRequestDistributionTheta=0.99
 
-#requestdistribution=uniform
+requestdistribution=uniform
 
 #requestdistribution=hotspot
 #hotspotdatafraction=0.1
