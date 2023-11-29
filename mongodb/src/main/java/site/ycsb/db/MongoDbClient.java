@@ -107,7 +107,7 @@ public class MongoDbClient extends DB {
   private final List<Document> bulkInserts = new ArrayList<Document>();
 
   /** MongoDB client session */
-  private static ClientSession session;
+  private ClientSession session;
 
   /**
    * Cleanup any state for this DB. Called once per DB instance; there is one DB
@@ -117,7 +117,7 @@ public class MongoDbClient extends DB {
   public void cleanup() throws DBException {
     if (INIT_COUNT.decrementAndGet() == 0) {
       try {
-        session.close();
+        // session.close();
         mongoClient.close();
       } catch (Exception e1) {
         System.err.println("Could not close MongoDB connection pool: "
@@ -223,7 +223,7 @@ public class MongoDbClient extends DB {
                 .withReadPreference(readPreference)
                 .withWriteConcern(writeConcern);
 
-        session = mongoClient.startSession();
+        // session = mongoClient.startSession();
 
         System.out.println("mongo client connection created with " + url);
       } catch (Exception e1) {
@@ -471,16 +471,19 @@ public class MongoDbClient extends DB {
 
   @Override
   public void start(){
+    session = mongoClient.startSession();
     session.startTransaction(TransactionOptions.builder().writeConcern(WriteConcern.MAJORITY).build());
   }
 
   @Override
   public void commit(){
     session.commitTransaction();
+    session.close();
   }
 
   @Override
   public void abort(){
     session.abortTransaction();
+    session.close();
   }
 }

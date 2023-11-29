@@ -169,6 +169,23 @@ public class DBWrapper extends DB {
     }
 	}
 
+  public long validate() throws DBException {
+    long st=System.nanoTime();
+    long countedSum;
+    try {
+      countedSum = db.validate();
+      long en = System.nanoTime();
+      measurements.measure("VALIDATE", (int) ((en - st) / 1000));
+      measurements.reportStatus("VALIDATE", Status.OK);
+      return countedSum;
+    } catch (DBException e) {
+      long en=System.nanoTime();
+      measurements.measure("VALIDATE",(int)((en-st)/1000));
+      measurements.reportStatus("VALIDATE", Status.ERROR);
+      throw e;
+    }
+  }
+
   /**
    * Read a record from the database. Each field/value pair from the result
    * will be stored in a HashMap.

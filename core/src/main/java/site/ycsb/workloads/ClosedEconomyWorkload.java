@@ -21,15 +21,8 @@ import java.util.Hashtable;
 import java.util.Properties;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicInteger;
-import site.ycsb.ByteIterator;
-import site.ycsb.Client;
-import site.ycsb.DB;
-import site.ycsb.DBException;
-import site.ycsb.RandomByteIterator;
-import site.ycsb.Status;
-import site.ycsb.StringByteIterator;
-import site.ycsb.Workload;
-import site.ycsb.WorkloadException;
+
+import site.ycsb.*;
 import site.ycsb.generator.ConstantIntegerGenerator;
 import site.ycsb.generator.CounterGenerator;
 import site.ycsb.generator.DiscreteGenerator;
@@ -255,6 +248,17 @@ public class ClosedEconomyWorkload extends Workload {
    * Default value of the percentage operations accessing the hot set.
    */
   public static final String HOTSPOT_OPN_FRACTION_DEFAULT = "0.8";
+
+  public static final String VALIDATE_BY_QUERY_PROPERTY = "validatebyquery";
+
+  /**
+   * The default value for the validateByQuery property.
+   */
+  public static final String VALIDATE_BY_QUERY_PROPERTY_DEFAULT = "true";
+
+  public static String FIELD_NAME = "field";
+  public static String DEFAULT_FIELD_NAME = "field0";
+
   public static String table;
   long fieldCount;
   /**
@@ -287,6 +291,7 @@ public class ClosedEconomyWorkload extends Workload {
   };
   private long totalCash;
   private long initialValue;
+  boolean validateByQuery;
 
   protected static NumberGenerator getFieldLengthGenerator(Properties p)
       throws WorkloadException {
@@ -442,6 +447,9 @@ public class ClosedEconomyWorkload extends Workload {
     }
 
     measurements = Measurements.getMeasurements();
+
+    validateByQuery = Boolean.parseBoolean(
+        p.getProperty(VALIDATE_BY_QUERY_PROPERTY, VALIDATE_BY_QUERY_PROPERTY_DEFAULT));
   }
 
   public String buildKeyName(long keyNum) {
@@ -455,7 +463,7 @@ public class ClosedEconomyWorkload extends Workload {
   HashMap<String, ByteIterator> buildValues() {
     HashMap<String, ByteIterator> values = new HashMap<>();
 
-    String fieldKey = "field0";
+    String fieldKey = DEFAULT_FIELD_NAME;
     ByteIterator data = new StringByteIterator("" + initialValue);
     values.put(fieldKey, data);
     return values;
@@ -619,9 +627,9 @@ public class ClosedEconomyWorkload extends Workload {
     if (db.read(table, firstKey, fields, firstValues).isOk() && db.read(table, secondKey, fields,
         secondValues).isOk()) {
       try {
-        long firstamount = Long.parseLong(firstValues.get("field0")
+        long firstamount = Long.parseLong(firstValues.get(DEFAULT_FIELD_NAME)
             .toString());
-        long secondamount = Long.parseLong(secondValues.get("field0")
+        long secondamount = Long.parseLong(secondValues.get(DEFAULT_FIELD_NAME)
             .toString());
 
         if (firstamount > 0) {
@@ -629,16 +637,10 @@ public class ClosedEconomyWorkload extends Workload {
           secondamount++;
         }
 
-        firstValues.put("field0",
+        firstValues.put(DEFAULT_FIELD_NAME,
             new StringByteIterator(Long.toString(firstamount)));
-        secondValues.put("field0",
+        secondValues.put(DEFAULT_FIELD_NAME,
             new StringByteIterator(Long.toString(secondamount)));
-
-//        if (db.update(table, firstKey, firstValues).isOk() ||
-//            db.update(table, secondKey, secondValues).isOk()) {
-////          System.err.println("Returning from OR");
-//          return true;
-//        }
 
         if (!db.update(table, firstKey, firstValues).isOk() ||
             !db.update(table, secondKey, secondValues).isOk()) {
@@ -709,6 +711,23 @@ public class ClosedEconomyWorkload extends Workload {
     return (db.insert(table, dbKey, values).isOk());
   }
 
+  private long validateByRead(DB db) throws DBException {
+    HashSet<String> fields = new HashSet<>();
+    fields.add(DEFAULT_FIELD_NAME);
+    HashMap<String, ByteIterator> values = new HashMap<>();
+    long counted_sum = 0;
+    for (long i = 0; i < recordCount; i++) {
+      String keyname = buildKeyName(validationKeySequence.nextValue().longValue());
+
+      db.start();
+      db.read(table, keyname, fields, values);
+      db.commit();
+
+      counted_sum += Long.parseLong(values.get(DEFAULT_FIELD_NAME).toString());
+    }
+    return counted_sum;
+  }
+
   /**
    * Perform validation of the database db after the workload has executed.
    *
@@ -716,21 +735,20 @@ public class ClosedEconomyWorkload extends Workload {
    * @throws WorkloadException
    */
   public boolean validate(DB db) throws WorkloadException {
-    HashSet<String> fields = new HashSet<>();
-    fields.add("field0");
-    System.out.println("Validating data");
-    HashMap<String, ByteIterator> values = new HashMap<>();
-    long counted_sum = 0;
-    for (long i = 0; i < recordCount; i++) {
-      String keyname = buildKeyName(validationKeySequence.nextValue().longValue());
-      try {
-        db.start();
-        db.read(table, keyname, fields, values);
-        db.commit();
-      } catch (DBException e) {
-        throw new WorkloadException(e);
+    long counted_sum;
+    System.out.println("Validating data...");
+    try {
+      if (validateByQuery) {
+        counted_sum = db.validate();
+      } else {
+        counted_sum = validateByRead(db);
       }
-      counted_sum += Long.parseLong(values.get("field0").toString());
+    } catch(Exception e) {
+      throw new WorkloadException(e);
+    }
+    if (counted_sum == -1) {
+      System.err.println("No validation done due to no validate() implementation.");
+      return false;
     }
 
     if (counted_sum != totalCash) {
@@ -742,6 +760,8 @@ public class ClosedEconomyWorkload extends Workload {
       System.err.println("[ANOMALY SCORE], " + Math.abs((totalCash - counted_sum) / (1.0 * count)));
       return false;
     } else {
+      System.out.println("[TOTAL CASH], " + totalCash);
+      System.out.println("[COUNTED CASH], " + counted_sum);
       return true;
     }
   }

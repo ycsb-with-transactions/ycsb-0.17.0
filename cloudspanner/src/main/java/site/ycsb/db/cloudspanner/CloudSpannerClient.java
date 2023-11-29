@@ -24,6 +24,7 @@ import site.ycsb.DB;
 import site.ycsb.DBException;
 import site.ycsb.Status;
 import site.ycsb.StringByteIterator;
+import site.ycsb.workloads.ClosedEconomyWorkload;
 import site.ycsb.workloads.CoreWorkload;
 
 import java.util.ArrayList;
@@ -100,6 +101,8 @@ public class CloudSpannerClient extends DB {
 
   private static String standardScan;
 
+  private static String standardValidate;
+
   private static final ArrayList<String> STANDARD_FIELDS = new ArrayList<>();
 
   private static final String PRIMARY_KEY_COLUMN = "id";
@@ -126,10 +129,17 @@ public class CloudSpannerClient extends DB {
     String table = properties.getProperty(CoreWorkload.TABLENAME_PROPERTY, CoreWorkload.TABLENAME_PROPERTY_DEFAULT);
     final String fieldprefix = properties.getProperty(CoreWorkload.FIELD_NAME_PREFIX,
                                                       CoreWorkload.FIELD_NAME_PREFIX_DEFAULT);
+    String validateTable = properties.getProperty(ClosedEconomyWorkload.TABLE_NAME_PROPERTY,
+                                                  ClosedEconomyWorkload.TABLE_NAME_PROPERTY_DEFAULT);
+    String validateField = properties.getProperty(ClosedEconomyWorkload.FIELD_NAME,
+                                                  ClosedEconomyWorkload.DEFAULT_FIELD_NAME);
+
     standardQuery = new StringBuilder()
         .append("SELECT * FROM ").append(table).append(" WHERE id=@key").toString();
     standardScan = new StringBuilder()
         .append("SELECT * FROM ").append(table).append(" WHERE id>=@startKey LIMIT @count").toString();
+    standardValidate = new StringBuilder().append("SELECT SUM(CAST(").append(validateField)
+        .append(" AS INT64)) FROM ").append(validateTable).toString();
     for (int i = 0; i < fieldCount; i++) {
       STANDARD_FIELDS.add(fieldprefix + i);
     }
@@ -433,5 +443,25 @@ public class CloudSpannerClient extends DB {
   public void abort() throws DBException {
     super.abort();
     transactionManager.rollback();
+  }
+
+  @Override
+  public long validate() throws DBException {
+    super.validate();
+    long countedSum;
+
+    Statement query = Statement.newBuilder(standardValidate).build();
+
+    try (ResultSet resultSet = dbClient.singleUse(timestampBound).executeQuery(query)) {
+      resultSet.next();
+      countedSum = resultSet.getLong(0);
+      if (resultSet.next()) {
+        throw new Exception("Expected exactly one row for validation.");
+      }
+      return countedSum;
+    } catch (Exception e) {
+      LOGGER.log(Level.INFO, "validate()", e);
+      throw new DBException(e);
+    }
   }
 }

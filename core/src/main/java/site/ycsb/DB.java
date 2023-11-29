@@ -87,6 +87,12 @@ public abstract class DB {
   }
 
   /**
+   * Validate the current database transaction.
+   */
+  public long validate() throws DBException { return -1;
+  }
+
+  /**
    * Cleanup any state for this DB.
    * Called once per DB instance; there is one DB instance per client thread.
    */

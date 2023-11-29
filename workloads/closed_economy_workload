@@ -53,3 +53,5 @@ writeAllFields=true
 readAllFields=true
 
 histogram.buckets=0
+
+validatebyquery=true
