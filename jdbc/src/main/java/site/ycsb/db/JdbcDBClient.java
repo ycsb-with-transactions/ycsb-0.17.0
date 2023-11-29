@@ -193,7 +193,8 @@ public class JdbcDBClient extends DB {
     this.jdbcFetchSize = getIntProperty(props, JDBC_FETCH_SIZE);
     this.batchSize = getIntProperty(props, DB_BATCH_SIZE);
 
-    this.autoCommit = getBoolProperty(props, JDBC_AUTO_COMMIT, true);
+//    this.autoCommit = getBoolProperty(props, JDBC_AUTO_COMMIT, true);
+    this.autoCommit = false;
     this.batchUpdates = getBoolProperty(props, JDBC_BATCH_UPDATES, false);
 
     try {
@@ -244,8 +245,7 @@ public class JdbcDBClient extends DB {
   public void start() throws DBException {
     super.start();
     try {
-      conns.get(0).setAutoCommit(false);
-      autoCommit = false;
+      conns.get(0).setAutoCommit(autoCommit);
     } catch (SQLException e) {
 //      e.printStackTrace();
       throw new DBException(e);
