@@ -740,16 +740,21 @@ public class ClosedEconomyWorkload extends Workload {
     try {
       if (validateByQuery) {
         counted_sum = db.validate();
+        if (counted_sum == -1) {
+          System.err.println("No validation done due to no validate() implementation, " +
+              "switching to validate by read method.");
+          counted_sum = validateByRead(db);
+        }
       } else {
         counted_sum = validateByRead(db);
       }
     } catch(Exception e) {
       throw new WorkloadException(e);
     }
-    if (counted_sum == -1) {
-      System.err.println("No validation done due to no validate() implementation.");
-      return false;
-    }
+//    if (counted_sum == -1) {
+//      System.err.println("No validation done due to no validate() implementation.");
+//      return false;
+//    }
 
     if (counted_sum != totalCash) {
       System.err.println("Validation failed");
