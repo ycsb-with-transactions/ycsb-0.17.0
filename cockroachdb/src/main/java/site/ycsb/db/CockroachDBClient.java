@@ -82,6 +82,11 @@ public class CockroachDBClient extends DB {
   /** The field name prefix in the table. */
   public static final String COLUMN_PREFIX = "FIELD";
 
+  /** Retry handling */
+  private static final int MAX_RETRY_COUNT = 3;
+  private static final String RETRY_SQL_STATE = "40001";
+  private final Random rand = new Random();
+
   private boolean sqlserver = false;
   private List<Connection> conns;
   private boolean initialized = false;
@@ -433,11 +438,36 @@ public class CockroachDBClient extends DB {
         updateStatement.setString(index++, value);
       }
       updateStatement.setString(index, key);
-      int result = updateStatement.executeUpdate();
-      if (result == 1) {
-        return Status.OK;
+
+      /** Retry logic */
+      int retryCount = 0;
+      while (retryCount <= MAX_RETRY_COUNT) {
+        try {
+          int result = updateStatement.executeUpdate();
+          if (result == 1) {
+            return Status.OK;
+          }
+          return Status.UNEXPECTED_STATE;
+        } catch (SQLException e) {
+          if (isRetryableError(e)) {
+            // log retryable exception
+            System.out.printf("retryable exception occurred:\n    sql state = [%s]\n    message = [%s]\n    retry counter = %s\n", e.getSQLState(), e.getMessage(), retryCount);
+            retryCount++;
+            // rollback
+            try {
+              updateStatement.getConnection().rollback();
+            } catch (SQLException rollbackException) {
+              System.err.println("error rolling back the transaction: " + rollbackException.getMessage());
+            }
+            applyBackoffStrategy(retryCount);
+          } else {
+            throw e;
+          }
+        }
       }
-      return Status.UNEXPECTED_STATE;
+      // if all retries fail
+      return Status.ERROR;
+      // return Status.UNEXPECTED_STATE;
     } catch (SQLException e) {
       System.err.println("Error in processing update to table: " + tableName + e);
       return Status.ERROR;
@@ -446,70 +476,98 @@ public class CockroachDBClient extends DB {
 
   @Override
   public Status insert(String tableName, String key, Map<String, ByteIterator> values) {
-    try {
-      int numFields = values.size();
-      OrderedFieldInfo fieldInfo = getFieldInfo(values);
-      StatementType type = new StatementType(StatementType.Type.INSERT, tableName,
-          numFields, fieldInfo.getFieldKeys(), getShardIndexByKey(key));
-      PreparedStatement insertStatement = cachedStatements.get(type);
-      if (insertStatement == null) {
-        insertStatement = createAndCacheInsertStatement(type, key);
-      }
-      insertStatement.setString(1, key);
-      int index = 2;
-      for (String value: fieldInfo.getFieldValues()) {
-        insertStatement.setString(index++, value);
-      }
-      // Using the batch insert API
-      if (batchUpdates) {
-        insertStatement.addBatch();
-        // Check for a sane batch size
-        if (batchSize > 0) {
-          // Commit the batch after it grows beyond the configured size
-          if (++numRowsInBatch % batchSize == 0) {
-            int[] results = insertStatement.executeBatch();
-            for (int r : results) {
-              // Acceptable values are 1 and SUCCESS_NO_INFO (-2) from reWriteBatchedInserts=true
-              if (r != 1 && r != -2) {
-                return Status.ERROR;
-              }
-            }
-            // If autoCommit is off, make sure we commit the batch
-            if (!autoCommit) {
-              getShardConnectionByKey(key).commit();
-            }
-            return Status.OK;
-          } // else, the default value of -1 or a nonsense. Treat it as an infinitely large batch.
-        } // else, we let the batch accumulate
-        // Added element to the batch, potentially committing the batch too.
-        return Status.BATCHED_OK;
-      } else {
-        // Normal update
-        int result = insertStatement.executeUpdate();
-        // If we are not autoCommit, we might have to commit now
-        if (!autoCommit) {
-          // Let updates be batcher locally
-          if (batchSize > 0) {
-            if (++numRowsInBatch % batchSize == 0) {
-              // Send the batch of updates
-              getShardConnectionByKey(key).commit();
-            }
-            // uhh
-            return Status.OK;
-          } else {
-            // Commit each update
-            getShardConnectionByKey(key).commit();
+      try {
+          int numFields = values.size();
+          OrderedFieldInfo fieldInfo = getFieldInfo(values);
+          StatementType type = new StatementType(StatementType.Type.INSERT, tableName,
+                  numFields, fieldInfo.getFieldKeys(), getShardIndexByKey(key));
+          PreparedStatement insertStatement = cachedStatements.get(type);
+          if (insertStatement == null) {
+              insertStatement = createAndCacheInsertStatement(type, key);
           }
-        }
-        if (result == 1) {
-          return Status.OK;
-        }
+          insertStatement.setString(1, key);
+
+          /** Retry logic */
+          int retryCount = 0;
+          while (retryCount <= MAX_RETRY_COUNT) {
+              try {
+                  // Add field values to the statement
+                  int index = 2;
+                  for (String value : fieldInfo.getFieldValues()) {
+                      insertStatement.setString(index++, value);
+                  }
+                  // Using the batch insert API
+                  if (batchUpdates) {
+                      insertStatement.addBatch();
+                      // Check for a sane batch size
+                      if (batchSize > 0) {
+                          // Commit the batch after it grows beyond the configured size
+                          if (++numRowsInBatch % batchSize == 0) {
+                              int[] results = insertStatement.executeBatch();
+                              for (int r : results) {
+                                  // Acceptable values are 1 and SUCCESS_NO_INFO (-2) from reWriteBatchedInserts=true
+                                  if (r != 1 && r != -2) {
+                                      return Status.ERROR;
+                                  }
+                              }
+                              // If autoCommit is off, make sure we commit the batch
+                              if (!autoCommit) {
+                                  getShardConnectionByKey(key).commit();
+                              }
+                              return Status.OK;
+                          } // else, the default value of -1 or a nonsense. Treat it as an infinitely large batch.
+                      } // else, we let the batch accumulate
+                      // Added element to the batch, potentially committing the batch too.
+                      return Status.BATCHED_OK;
+                  } else {
+                      // Normal update
+                      int result = insertStatement.executeUpdate();
+                      // If we are not autoCommit, we might have to commit now
+                      if (!autoCommit) {
+                          // Let updates be batched locally
+                          if (batchSize > 0) {
+                              if (++numRowsInBatch % batchSize == 0) {
+                                  // Send the batch of updates
+                                  getShardConnectionByKey(key).commit();
+                              }
+                              return Status.OK;
+                          } else {
+                              // Commit each update
+                              getShardConnectionByKey(key).commit();
+                          }
+                      }
+                      if (result == 1) {
+                          return Status.OK;
+                      }
+                  }
+
+                  return Status.UNEXPECTED_STATE;
+              } catch (SQLException e) {
+                  if (isRetryableError(e)) {
+                      // Log retryable exception
+                      System.out.printf("Retryable exception occurred:\n    sql state = [%s]\n    message = [%s]\n    retry counter = %s\n", e.getSQLState(), e.getMessage(), retryCount);
+                      retryCount++;
+
+                      // Rollback
+                      try {
+                          insertStatement.getConnection().rollback();
+                      } catch (SQLException rollbackException) {
+                          System.err.println("Error rolling back the transaction: " + rollbackException.getMessage());
+                      }
+
+                      applyBackoffStrategy(retryCount);
+                  } else {
+                      throw e;
+                  }
+              }
+          }
+
+          // If all retries fail
+          return Status.ERROR;
+      } catch (SQLException e) {
+          System.err.println("Error in processing insert to table: " + tableName + e);
+          return Status.ERROR;
       }
-      return Status.UNEXPECTED_STATE;
-    }  catch (SQLException e) {
-      System.err.println("Error in processing insert to table: " + tableName + e);
-      return Status.ERROR;
-    }
   }
 
   @Override
@@ -546,5 +604,20 @@ public class CockroachDBClient extends DB {
     }
 
     return new OrderedFieldInfo(fieldKeys, fieldValues);
+  }
+
+  private boolean isRetryableError(SQLException e) {
+    // Check if the exception is due to a retryable error
+    return RETRY_SQL_STATE.equals(e.getSQLState());
+  }
+
+  private void applyBackoffStrategy(int retryCount) {
+    int sleepMillis = (int) Math.pow(2, retryCount) * 100 + rand.nextInt(100);
+    System.out.printf("Hit 40001 transaction retry error, sleeping %s milliseconds\n", sleepMillis);
+    try {
+      Thread.sleep(sleepMillis);
+    } catch (InterruptedException ignore) {
+      Thread.currentThread().interrupt();
+    }
   }
 }
