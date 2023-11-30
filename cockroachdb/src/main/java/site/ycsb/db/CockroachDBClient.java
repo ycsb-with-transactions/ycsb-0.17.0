@@ -82,6 +82,11 @@ public class CockroachDBClient extends DB {
   /** The field name prefix in the table. */
   public static final String COLUMN_PREFIX = "FIELD";
 
+  /** Retry handling */
+  private static final int MAX_RETRY_COUNT = 3;
+  private static final String RETRY_SQL_STATE = "40001";
+  private final Random rand = new Random();
+
   private boolean sqlserver = false;
   private List<Connection> conns;
   private boolean initialized = false;
@@ -433,14 +438,54 @@ public class CockroachDBClient extends DB {
         updateStatement.setString(index++, value);
       }
       updateStatement.setString(index, key);
-      int result = updateStatement.executeUpdate();
-      if (result == 1) {
-        return Status.OK;
+
+      /** Retry logic */
+      int retryCount = 0;
+      while (retryCount <= MAX_RETRY_COUNT) {
+        try {
+          int result = updateStatement.executeUpdate();
+          if (result == 1) {
+            return Status.OK;
+          }
+          return Status.UNEXPECTED_STATE;
+        } catch (SQLException e) {
+          if (isRetryableError(e)) {
+            // log retryable exception
+            System.out.printf("retryable exception occurred:\n    sql state = [%s]\n    message = [%s]\n    retry counter = %s\n", e.getSQLState(), e.getMessage(), retryCount);
+            retryCount++;
+            // rollback
+            try {
+              updateStatement.getConnection().rollback();
+            } catch (SQLException rollbackException) {
+              System.err.println("error rolling back the transaction: " + rollbackException.getMessage());
+            }
+            applyBackoffStrategy(retryCount);
+          } else {
+            throw e;
+          }
+        }
       }
-      return Status.UNEXPECTED_STATE;
+      // if all retries fail
+      return Status.ERROR;
+      // return Status.UNEXPECTED_STATE;
     } catch (SQLException e) {
       System.err.println("Error in processing update to table: " + tableName + e);
       return Status.ERROR;
+    }
+  }
+
+  private boolean isRetryableError(SQLException e) {
+    // Check if the exception is due to a retryable error
+    return RETRY_SQL_STATE.equals(e.getSQLState());
+  }
+
+  private void applyBackoffStrategy(int retryCount) {
+    int sleepMillis = (int) Math.pow(2, retryCount) * 100 + rand.nextInt(100);
+    System.out.printf("Hit 40001 transaction retry error, sleeping %s milliseconds\n", sleepMillis);
+    try {
+      Thread.sleep(sleepMillis);
+    } catch (InterruptedException ignore) {
+      Thread.currentThread().interrupt();
     }
   }
 
