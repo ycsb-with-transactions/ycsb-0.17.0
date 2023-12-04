@@ -156,6 +156,7 @@ public class ClientThread implements Runnable {
               }
             } catch (DBException e) {
               System.err.println("Get aborts when inserting, retrying...");
+              e.printStackTrace();
               retryCount++;
               if (retryCount == maxRetryCount) {
                 db.abort();
