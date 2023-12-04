@@ -45,6 +45,8 @@ public class ClientThread implements Runnable {
   private long targetOpsTickNs;
   private final Measurements measurements;
 
+  private int maxRetryCount;
+
   /**
    * Constructor.
    *
@@ -71,6 +73,7 @@ public class ClientThread implements Runnable {
     measurements = Measurements.getMeasurements();
     spinSleep = Boolean.valueOf(this.props.getProperty("spin.sleep", "false"));
     this.completeLatch = completeLatch;
+    this.maxRetryCount = 5;
   }
 
   public void setThreadId(final int threadId) {
@@ -119,7 +122,6 @@ public class ClientThread implements Runnable {
 
         while (((opcount == 0) || (opsdone < opcount)) && !workload.isStopRequested()) {
 
-          int maxRetryCount = 3;
           int retryCount = 0;
           while (retryCount < maxRetryCount) {
             try {
@@ -134,6 +136,13 @@ public class ClientThread implements Runnable {
                 db.abort();
                 throw new WorkloadException(e);
               }
+
+              try {
+                Thread.sleep(2000);
+              } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                throw new WorkloadException("Thread interrupted during backoff", ie);
+              }
             }
           }
 
@@ -145,7 +154,6 @@ public class ClientThread implements Runnable {
         long startTimeNanos = System.nanoTime();
 
         while (((opcount == 0) || (opsdone < opcount)) && !workload.isStopRequested()) {
-          int maxRetryCount = 3;
           int retryCount = 0;
           while (retryCount < maxRetryCount) {
             try {
@@ -155,12 +163,20 @@ public class ClientThread implements Runnable {
                 break;
               }
             } catch (DBException e) {
-              System.err.println("Get aborts when inserting, retrying...");
-              e.printStackTrace();
               retryCount++;
               if (retryCount == maxRetryCount) {
                 db.abort();
+                System.err.println("Insert retry limits reached...");
+                e.printStackTrace();
+                e.printStackTrace(System.out);
                 throw new WorkloadException(e);
+              }
+
+              try {
+                Thread.sleep(2000);
+              } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                throw new WorkloadException("Thread interrupted during backoff", ie);
               }
             }
           }
