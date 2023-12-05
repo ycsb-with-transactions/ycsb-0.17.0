@@ -21,6 +21,8 @@ import site.ycsb.DBException;
 import site.ycsb.ByteIterator;
 import site.ycsb.Status;
 import site.ycsb.StringByteIterator;
+import site.ycsb.workloads.ClosedEconomyWorkload;
+import site.ycsb.workloads.CoreWorkload;
 
 import java.sql.*;
 import java.util.*;
@@ -86,6 +88,9 @@ public class CockroachDBClient extends DB {
   private static final int MAX_RETRY_COUNT = 3;
   private static final String RETRY_SQL_STATE = "40001";
   private final Random rand = new Random();
+
+  /** for validate */
+  private static String standardValidate;
 
   private boolean sqlserver = false;
   private List<Connection> conns;
@@ -188,6 +193,9 @@ public class CockroachDBClient extends DB {
     String user = props.getProperty(CONNECTION_USER, DEFAULT_PROP);
     String passwd = props.getProperty(CONNECTION_PASSWD, DEFAULT_PROP);
     String driver = props.getProperty(DRIVER_CLASS);
+
+    // TODO: check if curr workload is closed_economy_workload?
+    constructStandardQueriesAndFields(props);
 
     if (driver.contains("sqlserver")) {
       sqlserver = true;
@@ -368,19 +376,46 @@ public class CockroachDBClient extends DB {
         readStatement = createAndCacheReadStatement(type, key);
       }
       readStatement.setString(1, key);
-      ResultSet resultSet = readStatement.executeQuery();
-      if (!resultSet.next()) {
-        resultSet.close();
-        return Status.NOT_FOUND;
-      }
-      if (result != null && fields != null) {
-        for (String field : fields) {
-          String value = resultSet.getString(field);
-          result.put(field, new StringByteIterator(value));
+
+      /** Retry logic */
+      int retryCount = 0;
+      while (retryCount <= MAX_RETRY_COUNT) {
+        ResultSet resultSet = null;
+        try {
+          resultSet = readStatement.executeQuery();
+          if (!resultSet.next()) {
+              return Status.NOT_FOUND;
+          }
+          if (result != null && fields != null) {
+            for (String field : fields) {
+              String value = resultSet.getString(field);
+              result.put(field, new StringByteIterator(value));
+            }
+          }
+          return Status.OK;
+        } catch (SQLException e) {
+          if (isRetryableError(e)) {
+            // log retryable exception
+            System.out.printf("Retryable exception occurred:\n    sql state = [%s]\n    message = [%s]\n    retry counter = %s\n", e.getSQLState(), e.getMessage(), retryCount);
+            retryCount++;
+            applyBackoffStrategy(retryCount);
+            // TODO: do we need rollback for Read?
+          } else {
+            throw e;
+          }
+        } finally {
+          // close result set
+          if (resultSet != null) {
+            try {
+              resultSet.close();
+            } catch (SQLException e) {
+              System.out.println("Error closing ResultSet: " + e.getMessage());
+            }
+          }
         }
       }
-      resultSet.close();
-      return Status.OK;
+      // if all retry fail
+      return Status.ERROR;
     } catch (SQLException e) {
       System.err.println("Error in processing read of table " + tableName + ": " + e);
       return Status.ERROR;
@@ -590,6 +625,27 @@ public class CockroachDBClient extends DB {
     }
   }
 
+  @Override
+  public long validate() throws DBException{
+    super.validate();
+    long countedSum;
+    // TODO
+    try (Connection conn = conns.get(0);
+        PreparedStatement preparedStatement = conn.prepareStatement(standardValidate);
+        ResultSet resultSet = preparedStatement.executeQuery()) {
+      resultSet.next();
+      countedSum = resultSet.getLong(0);
+      if (resultSet.next()) {
+        System.err.println("Expected exactly one row for validation.");
+      }
+      return countedSum;
+    } catch (SQLException e) {
+      System.err.println("Error in processing validate to table" + e);
+      throw new DBException(e);
+    }
+  }
+
+
   private OrderedFieldInfo getFieldInfo(Map<String, ByteIterator> values) {
     String fieldKeys = "";
     List<String> fieldValues = new ArrayList<>();
@@ -604,6 +660,12 @@ public class CockroachDBClient extends DB {
     }
 
     return new OrderedFieldInfo(fieldKeys, fieldValues);
+  }
+
+  private static void constructStandardQueriesAndFields(Properties properties) {
+    String validateTable = properties.getProperty(ClosedEconomyWorkload.TABLE_NAME_PROPERTY, ClosedEconomyWorkload.TABLE_NAME_PROPERTY_DEFAULT);
+    String validateField = properties.getProperty(ClosedEconomyWorkload.FIELD_NAME, ClosedEconomyWorkload.DEFAULT_FIELD_NAME);
+    standardValidate = new StringBuilder().append("SELECT SUM(CAST(").append(validateField).append(" AS INT64)) FROM ").append(validateTable).toString();
   }
 
   private boolean isRetryableError(SQLException e) {
