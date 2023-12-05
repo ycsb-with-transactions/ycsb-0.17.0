@@ -739,6 +739,7 @@ public class ClosedEconomyWorkload extends Workload {
     System.out.println("Validating data...");
     try {
       if (validateByQuery) {
+        System.out.println("Validating by query execution...");
         counted_sum = db.validate();
         if (counted_sum == -1) {
           System.err.println("No validation done due to no validate() implementation, " +
@@ -746,6 +747,7 @@ public class ClosedEconomyWorkload extends Workload {
           counted_sum = validateByRead(db);
         }
       } else {
+        System.out.println("Validating by read operations...");
         counted_sum = validateByRead(db);
       }
     } catch(Exception e) {
