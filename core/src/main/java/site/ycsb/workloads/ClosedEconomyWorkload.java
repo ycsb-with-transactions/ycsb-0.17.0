@@ -754,13 +754,9 @@ public class ClosedEconomyWorkload extends Workload {
     } catch(Exception e) {
       throw new WorkloadException(e);
     }
-//    if (counted_sum == -1) {
-//      System.err.println("No validation done due to no validate() implementation.");
-//      return false;
-//    }
 
     if (counted_sum != totalCash) {
-      System.err.println("Validation failed");
+      System.err.println("Validation failed...");
       System.err.println("[TOTAL CASH], " + totalCash);
       System.err.println("[COUNTED CASH], " + counted_sum);
       long count = actualOpCount.intValue();
@@ -768,8 +764,9 @@ public class ClosedEconomyWorkload extends Workload {
       System.err.println("[ANOMALY SCORE], " + Math.abs((totalCash - counted_sum) / (1.0 * count)));
       return false;
     } else {
-      System.err.println("[TOTAL CASH], " + totalCash);
-      System.err.println("[COUNTED CASH], " + counted_sum);
+      System.out.println("Validation succeeded..");
+      System.out.println("TOTAL CASH: " + totalCash);
+      System.out.println("COUNTED CASH: " + counted_sum);
       return true;
     }
   }
