@@ -75,7 +75,7 @@ public class ClientThread implements Runnable {
     measurements = Measurements.getMeasurements();
     spinSleep = Boolean.valueOf(this.props.getProperty("spin.sleep", "false"));
     this.completeLatch = completeLatch;
-    this.maxRetryCount = 5;
+    this.maxRetryCount = 3;
     this.waitTimeBeforeRetry = 1000;
   }
 
