@@ -316,7 +316,8 @@ public class ClosedEconomyWorkload extends Workload {
     } else if (fieldLengthDistribution.compareTo("histogram") == 0) {
       try {
         fieldLengthGenerator = new HistogramGenerator(fieldLengthHistogram);
-      } catch (IOException e) {
+      } catch (IOException e)
+      {
         throw new WorkloadException(
             "Couldn't read field length histogram file: " + fieldLengthHistogram, e);
       }
@@ -767,8 +768,8 @@ public class ClosedEconomyWorkload extends Workload {
       System.err.println("[ANOMALY SCORE], " + Math.abs((totalCash - counted_sum) / (1.0 * count)));
       return false;
     } else {
-      System.out.println("[TOTAL CASH], " + totalCash);
-      System.out.println("[COUNTED CASH], " + counted_sum);
+      System.err.println("[TOTAL CASH], " + totalCash);
+      System.err.println("[COUNTED CASH], " + counted_sum);
       return true;
     }
   }
