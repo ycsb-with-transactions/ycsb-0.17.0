@@ -47,7 +47,6 @@ public class ClientThread implements Runnable {
 
   private int maxRetryCount;
 
-  private int waitTimeBeforeRetry;
 
   /**
    * Constructor.
@@ -76,7 +75,6 @@ public class ClientThread implements Runnable {
     spinSleep = Boolean.valueOf(this.props.getProperty("spin.sleep", "false"));
     this.completeLatch = completeLatch;
     this.maxRetryCount = 3;
-    this.waitTimeBeforeRetry = 1000;
   }
 
   public void setThreadId(final int threadId) {
@@ -139,13 +137,6 @@ public class ClientThread implements Runnable {
                 db.abort();
                 throw new WorkloadException(e);
               }
-
-              try {
-                Thread.sleep(waitTimeBeforeRetry);
-              } catch (InterruptedException ie) {
-                Thread.currentThread().interrupt();
-                throw new WorkloadException("Thread interrupted during backoff", ie);
-              }
             }
           }
 
@@ -182,12 +173,6 @@ public class ClientThread implements Runnable {
                 throw new WorkloadException(e);
               }
 
-              try {
-                Thread.sleep(waitTimeBeforeRetry);
-              } catch (InterruptedException ie) {
-                Thread.currentThread().interrupt();
-                throw new WorkloadException("Thread interrupted during backoff", ie);
-              }
             }
           }
 
