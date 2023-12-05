@@ -490,10 +490,9 @@ public class CockroachDBClient extends DB {
         } catch (SQLException e) {
           if (isRetryableError(e)) {
             // log retryable exception
-            System.out.printf("retryable exception occurred in processing update:\n    sql state = [%s]\n    message = [%s]\n    retry counter = %s\n", e.getSQLState(), e.getMessage(), retryCount);
-            System.out.println("STACK TRACE:\n");
+            System.out.printf("retryable exception occurred in processing update:\n    sql state = [%s]\n    retry counter = %s\n", e.getSQLState(), retryCount);
+            System.out.println("\nSTACK TRACE:");
             e.printStackTrace();
-            System.out.println("\n");
             retryCount++;
             // rollback
             try {
