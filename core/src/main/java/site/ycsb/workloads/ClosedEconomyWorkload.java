@@ -111,7 +111,7 @@ public class ClosedEconomyWorkload extends Workload {
   /**
    * The name of the property for the total amount of money in the economy at the start.
    */
-  public static final String TOTAL_CASH_PROPERTY = "total_cash";
+  public static final String TOTAL_CASH_PROPERTY = "totalCash";
   /**
    * The default total amount of money in the economy at the start.
    */
