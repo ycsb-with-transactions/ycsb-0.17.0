@@ -396,7 +396,7 @@ public class CockroachDBClient extends DB {
         } catch (SQLException e) {
           if (isRetryableError(e)) {
             // log retryable exception
-            System.out.printf("Retryable exception occurred:\n    sql state = [%s]\n    message = [%s]\n    retry counter = %s\n", e.getSQLState(), e.getMessage(), retryCount);
+            System.out.printf("Retryable exception occurred in processing read:\n    sql state = [%s]\n    message = [%s]\n    retry counter = %s\n", e.getSQLState(), e.getMessage(), retryCount);
             retryCount++;
             applyBackoffStrategy(retryCount);
             // TODO: do we need rollback for Read?
@@ -486,7 +486,7 @@ public class CockroachDBClient extends DB {
         } catch (SQLException e) {
           if (isRetryableError(e)) {
             // log retryable exception
-            System.out.printf("retryable exception occurred:\n    sql state = [%s]\n    message = [%s]\n    retry counter = %s\n", e.getSQLState(), e.getMessage(), retryCount);
+            System.out.printf("retryable exception occurred in processing update:\n    sql state = [%s]\n    message = [%s]\n    retry counter = %s\n", e.getSQLState(), e.getMessage(), retryCount);
             retryCount++;
             // rollback
             try {
@@ -580,7 +580,7 @@ public class CockroachDBClient extends DB {
               } catch (SQLException e) {
                   if (isRetryableError(e)) {
                       // Log retryable exception
-                      System.out.printf("Retryable exception occurred:\n    sql state = [%s]\n    message = [%s]\n    retry counter = %s\n", e.getSQLState(), e.getMessage(), retryCount);
+                      System.out.printf("Retryable exception occurred in processing insert:\n    sql state = [%s]\n    message = [%s]\n    retry counter = %s\n", e.getSQLState(), e.getMessage(), retryCount);
                       retryCount++;
 
                       // Rollback
