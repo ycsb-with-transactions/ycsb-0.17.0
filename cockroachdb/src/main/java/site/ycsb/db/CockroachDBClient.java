@@ -401,6 +401,8 @@ public class CockroachDBClient extends DB {
             applyBackoffStrategy(retryCount);
             // TODO: do we need rollback for Read?
           } else {
+            System.err.println("Non-retryable exceptioon ocuured in processing read: " + e.getMessage());
+            e.printStackTrace();
             throw e;
           }
         } finally {
@@ -409,7 +411,8 @@ public class CockroachDBClient extends DB {
             try {
               resultSet.close();
             } catch (SQLException e) {
-              System.out.println("Error closing ResultSet: " + e.getMessage());
+              System.err.println("Error closing ResultSet: " + e.getMessage());
+              e.printStackTrace();
             }
           }
         }
@@ -418,6 +421,7 @@ public class CockroachDBClient extends DB {
       return Status.ERROR;
     } catch (SQLException e) {
       System.err.println("Error in processing read of table " + tableName + ": " + e);
+      e.printStackTrace();
       return Status.ERROR;
     }
   }
@@ -496,6 +500,7 @@ public class CockroachDBClient extends DB {
             }
             applyBackoffStrategy(retryCount);
           } else {
+            System.err.println("Non-retryable exceptioon ocuured in processing update: " + e.getMessage());
             throw e;
           }
         }
@@ -505,6 +510,7 @@ public class CockroachDBClient extends DB {
       // return Status.UNEXPECTED_STATE;
     } catch (SQLException e) {
       System.err.println("Error in processing update to table: " + tableName + e);
+      e.printStackTrace();
       return Status.ERROR;
     }
   }
@@ -592,6 +598,8 @@ public class CockroachDBClient extends DB {
 
                       applyBackoffStrategy(retryCount);
                   } else {
+                      System.err.println("Non-retryable exceptioon ocuured in processing insert: " + e.getMessage());
+                      e.printStackTrace();
                       throw e;
                   }
               }
@@ -601,6 +609,7 @@ public class CockroachDBClient extends DB {
           return Status.ERROR;
       } catch (SQLException e) {
           System.err.println("Error in processing insert to table: " + tableName + e);
+          e.printStackTrace();
           return Status.ERROR;
       }
   }
@@ -621,6 +630,7 @@ public class CockroachDBClient extends DB {
       return Status.UNEXPECTED_STATE;
     } catch (SQLException e) {
       System.err.println("Error in processing delete to table: " + tableName + e);
+      e.printStackTrace();
       return Status.ERROR;
     }
   }
@@ -640,7 +650,8 @@ public class CockroachDBClient extends DB {
       }
       return countedSum;
     } catch (SQLException e) {
-      System.err.println("Error in processing validate to table: " + e);
+      System.err.println("Error in processing validate to table: " + e.getMessage());
+      e.printStackTrace();
       throw new DBException(e);
     }
   }
