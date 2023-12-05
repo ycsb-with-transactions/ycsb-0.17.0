@@ -634,13 +634,13 @@ public class CockroachDBClient extends DB {
         PreparedStatement preparedStatement = conn.prepareStatement(standardValidate);
         ResultSet resultSet = preparedStatement.executeQuery()) {
       resultSet.next();
-      countedSum = resultSet.getLong(0);
+      countedSum = resultSet.getLong(1);
       if (resultSet.next()) {
         System.err.println("Expected exactly one row for validation.");
       }
       return countedSum;
     } catch (SQLException e) {
-      System.err.println("Error in processing validate to table" + e);
+      System.err.println("Error in processing validate to table: " + e);
       throw new DBException(e);
     }
   }
