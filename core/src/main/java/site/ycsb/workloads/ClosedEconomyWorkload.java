@@ -15,6 +15,7 @@
 package site.ycsb.workloads;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -728,8 +729,9 @@ public class ClosedEconomyWorkload extends Workload {
       counted_sum += Long.parseLong(values.get(DEFAULT_FIELD_NAME).toString());
     }
     long en = System.nanoTime();
-    measurements.measure("VALIDATE-BY-READ", (int) ((en - st) / 1000));
-    measurements.reportStatus("VALIDATE-BY-READ", Status.OK);
+    // using Measurement class would exceed the MAX_VALUE of Integer,
+    // so we directly print out the latency
+    System.out.println("[VALIDATE], AverageLatency(us), " + (en - st) / 1000);
     return counted_sum;
   }
 
@@ -744,34 +746,47 @@ public class ClosedEconomyWorkload extends Workload {
     System.out.println("Validating data...");
     try {
       if (validateByQuery) {
-        System.out.println("Validating by query execution...");
+        System.err.println("Validating by query execution...");
         counted_sum = db.validate();
-        if (counted_sum == -1) {
-          System.err.println("No validation done due to no validate() implementation, " +
-              "switching to validate by read method.");
-          counted_sum = validateByRead(db);
-        }
+        System.out.println("[VALIDATE], METHOD, QUERY");
       } else {
-        System.out.println("Validating by read operations...");
+        System.err.println("Validating by read operations...");
         counted_sum = validateByRead(db);
+        System.out.println("[VALIDATE], METHOD, READ-OPERATIONS");
       }
     } catch(Exception e) {
       throw new WorkloadException(e);
     }
 
+    if (counted_sum == -1) {
+      System.err.println("No validation done due to no validate() implementation, " +
+          "switching to validate by read method.");
+      System.out.println("[VALIDATE], STATUS, FAILED-NO IMPLEMENTATION");
+      return false;
+    }
+
+    long count = actualOpCount.intValue();
+    double anomalyScore = Math.abs((totalCash - counted_sum) / (1.0 * count));
+
     if (counted_sum != totalCash) {
-      System.err.println("Validation failed...");
-      System.err.println("[TOTAL CASH], " + totalCash);
-      System.err.println("[COUNTED CASH], " + counted_sum);
-      long count = actualOpCount.intValue();
-      System.err.println("[ACTUAL OPERATIONS], " + count);
-      System.err.println("[ANOMALY SCORE], " + Math.abs((totalCash - counted_sum) / (1.0 * count)));
+      // validation failed, to terminal and to file
+      printValidationMessages(System.err, "FAILED", totalCash, counted_sum, count, anomalyScore);
+      printValidationMessages(System.out, "FAILED", totalCash, counted_sum, count, anomalyScore);
       return false;
     } else {
-      System.out.println("Validation succeeded..");
-      System.out.println("TOTAL CASH: " + totalCash);
-      System.out.println("COUNTED CASH: " + counted_sum);
+      // validation succeeded
+      printValidationMessages(System.out, "SUCCESS", totalCash, counted_sum, count, anomalyScore);
       return true;
     }
+  }
+
+  // print validation messages
+  private static void printValidationMessages(PrintStream stream, String status, long totalCash,
+                                              long counted_sum, long count, double anomalyScore) {
+    stream.println("[VALIDATE], STATUS, " + status);
+    stream.println("[VALIDATE], TOTAL CASH, " + totalCash);
+    stream.println("[VALIDATE], COUNTED CASH, " + counted_sum);
+    stream.println("[VALIDATE], ACTUAL OPERATIONS, " + count);
+    stream.println("[VALIDATE], ANOMALY SCORE, " + anomalyScore);
   }
 }

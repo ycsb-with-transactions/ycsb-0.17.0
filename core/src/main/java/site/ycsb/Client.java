@@ -381,11 +381,12 @@ public final class Client {
 
         try {
           DB db = DBFactory.newDB(dbname,props, tracer);
+          System.err.println("Executing validation process...");
           db.init();
           if (workload.validate(db))
-            System.err.println("Database validation succeeded");
+            System.err.println("Database validation succeeded.");
           else
-            System.err.println("Database validation failed");
+            System.err.println("Database validation failed.");
         } catch (WorkloadException e) {
           System.err.println("Database validation failed with error: " + e.getMessage());
           e.printStackTrace();

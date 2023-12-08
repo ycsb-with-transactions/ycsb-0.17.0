@@ -89,8 +89,7 @@ public abstract class DB {
   /**
    * Validate the current database transaction.
    */
-  public long validate() throws DBException { return -1;
-  }
+  public long validate() throws DBException { return -1; }
 
   /**
    * Cleanup any state for this DB.
