@@ -292,6 +292,7 @@ public class ClosedEconomyWorkload extends Workload {
   };
   private long totalCash;
   private long initialValue;
+  private static long INITIAL_VALUE_DEFAULT = 1L;
   boolean validateByQuery;
 
   protected static NumberGenerator getFieldLengthGenerator(Properties p)
@@ -356,7 +357,14 @@ public class ClosedEconomyWorkload extends Workload {
     totalCash = Long.parseLong(p.getProperty(TOTAL_CASH_PROPERTY, TOTAL_CASH_PROPERTY_DEFAULT));
     long currentTotal = totalCash;
     long currentCount = recordCount;
-    initialValue = totalCash / recordCount;
+    if (totalCash % recordCount == 0) {
+      initialValue = totalCash / recordCount;
+    } else {
+      System.err.println("Incompatible total cash value and record out. " +
+          "Setting total cash value to record count, and cash values for each entry to 1.");
+      totalCash = recordCount;
+      initialValue = INITIAL_VALUE_DEFAULT;
+    }
 
     String requestDistrib = p.getProperty(REQUEST_DISTRIBUTION_PROPERTY,
         REQUEST_DISTRIBUTION_PROPERTY_DEFAULT);
