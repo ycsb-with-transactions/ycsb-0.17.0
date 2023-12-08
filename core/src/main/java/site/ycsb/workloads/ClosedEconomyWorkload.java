@@ -717,6 +717,7 @@ public class ClosedEconomyWorkload extends Workload {
     fields.add(DEFAULT_FIELD_NAME);
     HashMap<String, ByteIterator> values = new HashMap<>();
     long counted_sum = 0;
+    long st = System.nanoTime();
     for (long i = 0; i < recordCount; i++) {
       String keyname = buildKeyName(validationKeySequence.nextValue().longValue());
 
@@ -726,6 +727,9 @@ public class ClosedEconomyWorkload extends Workload {
 
       counted_sum += Long.parseLong(values.get(DEFAULT_FIELD_NAME).toString());
     }
+    long en = System.nanoTime();
+    measurements.measure("VALIDATE-BY-READ", (int) ((en - st) / 1000));
+    measurements.reportStatus("VALIDATE-BY-READ", Status.OK);
     return counted_sum;
   }
 
