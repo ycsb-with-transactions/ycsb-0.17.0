@@ -360,7 +360,7 @@ public class ClosedEconomyWorkload extends Workload {
     if (totalCash % recordCount == 0) {
       initialValue = totalCash / recordCount;
     } else {
-      System.err.println("Incompatible total cash value and record out. " +
+      System.err.println("Incompatible total cash value and record count. " +
           "Setting total cash value to record count, and cash values for each entry to 1.");
       totalCash = recordCount;
       initialValue = INITIAL_VALUE_DEFAULT;
