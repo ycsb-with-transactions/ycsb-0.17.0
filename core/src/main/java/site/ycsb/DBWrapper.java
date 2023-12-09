@@ -149,8 +149,8 @@ public class DBWrapper extends DB {
       measurements.reportStatus("COMMIT", Status.OK);
     } catch (DBException e) {
       long en = System.nanoTime();
-      measurements.measure("RETRY", (int) ((en - st) / 1000));
-      measurements.reportStatus("RETRY", Status.ERROR);
+      measurements.measure("COMMIT-FAILED-FOR-RETRY", (int) ((en - st) / 1000));
+      measurements.reportStatus("COMMIT-FAILED-FOR-RETRY", Status.ERROR);
       throw e;
     }
 	}
