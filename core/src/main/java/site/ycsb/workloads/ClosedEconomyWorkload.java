@@ -381,6 +381,15 @@ public class ClosedEconomyWorkload extends Workload {
     writeAllFields = Boolean.parseBoolean(
         p.getProperty(WRITE_ALL_FIELDS_PROPERTY, WRITE_ALL_FIELDS_PROPERTY_DEFAULT));
 
+    long insertcount=
+        Integer.parseInt(p.getProperty(INSERT_COUNT_PROPERTY, String.valueOf(recordCount - insertStart)));
+    // Confirm valid values for insertstart and insertcount in relation to recordCount
+    if (recordCount < (insertStart + insertcount)) {
+      System.err.println("Invalid combination of insertstart, insertcount and recordCount.");
+      System.err.println("recordCount must be bigger than insertstart + insertcount.");
+      System.exit(-1);
+    }
+
     if (p.getProperty(INSERT_ORDER_PROPERTY, INSERT_ORDER_PROPERTY_DEFAULT).compareTo("hashed")
         == 0) {
       orderedInserts = false;
@@ -432,7 +441,7 @@ public class ClosedEconomyWorkload extends Workload {
       double theta = Double.parseDouble(p.getProperty(ZIPFIAN_REQUEST_DISTRIBUTION_THETA,
           ZIPFIAN_REQUEST_DISTRIBUTION_THETA_DEFAULT));
 
-      keyChooser = new ScrambledZipfianGenerator(insertStart, insertStart + recordCount + expectedNewKeys, theta);
+      keyChooser = new ScrambledZipfianGenerator(insertStart, insertStart + insertCount + expectedNewKeys, theta);
     } else if (requestDistrib.compareTo("latest") == 0) {
       keyChooser = new SkewedLatestGenerator(transactionInsertKeySequence);
     } else if (requestDistrib.equals("hotspot")) {
