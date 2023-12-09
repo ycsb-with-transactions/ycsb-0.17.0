@@ -142,7 +142,7 @@ public class ClientThread implements Runnable {
               isRetry = true;
               if (retryCount == maxRetryCount) {
                 db.abort();
-                throw new WorkloadException(e);
+//                throw new WorkloadException(e);
               }
 
               try {
