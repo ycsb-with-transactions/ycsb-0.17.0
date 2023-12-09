@@ -126,7 +126,7 @@ public class ClientThread implements Runnable {
         while (((opcount == 0) || (opsdone < opcount)) && !workload.isStopRequested()) {
 
           int retryCount = 0;
-          while (retryCount < maxRetryCount) {
+          while (retryCount <= maxRetryCount) {
             try {
               db.start();
               if (workload.doTransaction(db, workloadstate)) {
@@ -160,7 +160,7 @@ public class ClientThread implements Runnable {
           int retryCount = 0;
           // denote whether it is a retry, if not, we do insert
           boolean isRetry = false;
-          while (retryCount < maxRetryCount) {
+          while (retryCount <= maxRetryCount) {
             try {
                 db.start();
                 if (isRetry) {
