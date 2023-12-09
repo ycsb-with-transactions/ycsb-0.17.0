@@ -381,10 +381,10 @@ public class ClosedEconomyWorkload extends Workload {
     writeAllFields = Boolean.parseBoolean(
         p.getProperty(WRITE_ALL_FIELDS_PROPERTY, WRITE_ALL_FIELDS_PROPERTY_DEFAULT));
 
-    long insertcount=
+    long insertCount=
         Integer.parseInt(p.getProperty(INSERT_COUNT_PROPERTY, String.valueOf(recordCount - insertStart)));
     // Confirm valid values for insertstart and insertcount in relation to recordCount
-    if (recordCount < (insertStart + insertcount)) {
+    if (recordCount < (insertStart + insertCount)) {
       System.err.println("Invalid combination of insertstart, insertcount and recordCount.");
       System.err.println("recordCount must be bigger than insertstart + insertcount.");
       System.exit(-1);
