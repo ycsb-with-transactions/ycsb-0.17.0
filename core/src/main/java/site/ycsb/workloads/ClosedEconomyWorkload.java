@@ -357,7 +357,7 @@ public class ClosedEconomyWorkload extends Workload {
     totalCash = Long.parseLong(p.getProperty(TOTAL_CASH_PROPERTY, TOTAL_CASH_PROPERTY_DEFAULT));
     long currentTotal = totalCash;
     long currentCount = recordCount;
-    if (totalCash % recordCount == 0) {
+    if (totalCash > 0 && totalCash % recordCount == 0) {
       initialValue = totalCash / recordCount;
     } else {
       System.err.println("Incompatible total cash value and record count. " +
