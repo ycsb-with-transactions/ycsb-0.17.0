@@ -137,6 +137,7 @@ public class ClientThread implements Runnable {
                   db.commit();
                 }
               }
+              break;
             } catch (DBException e) {
               retryCount++;
               isRetry = true;
