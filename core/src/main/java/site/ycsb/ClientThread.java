@@ -126,29 +126,23 @@ public class ClientThread implements Runnable {
         while (((opcount == 0) || (opsdone < opcount)) && !workload.isStopRequested()) {
 
           int retryCount = 0;
-          boolean isRetry = false;
           while (retryCount <= maxRetryCount) {
             try {
               db.start();
-              if (isRetry) {
+
+              if (workload.doTransaction(db, workloadstate)) {
                 db.commit();
-              } else {
-                if (workload.doTransaction(db, workloadstate)) {
-                  db.commit();
-                } else {
-                  isRetry = true;
-                  retryCount++;
-                  if (retryCount > maxRetryCount) {
-                    db.abort();
-                    break;
-                  }
-                  continue;
-                }
+                // if commit is successful, break out the retry loop, and continue to next operation
+                break;
               }
-              break;
+
+              retryCount++;
+              if (retryCount > maxRetryCount) {
+                db.abort();
+              }
+
             } catch (DBException e) {
               retryCount++;
-              isRetry = true;
               if (retryCount > maxRetryCount) {
                 db.abort();
                 break;
