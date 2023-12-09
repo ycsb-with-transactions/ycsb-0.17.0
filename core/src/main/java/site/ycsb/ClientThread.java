@@ -126,15 +126,20 @@ public class ClientThread implements Runnable {
         while (((opcount == 0) || (opsdone < opcount)) && !workload.isStopRequested()) {
 
           int retryCount = 0;
+          boolean isRetry = false;
           while (retryCount <= maxRetryCount) {
             try {
               db.start();
-              if (workload.doTransaction(db, workloadstate)) {
+              if (isRetry) {
                 db.commit();
-                break;
+              } else {
+                if (workload.doTransaction(db, workloadstate)) {
+                  db.commit();
+                }
               }
             } catch (DBException e) {
               retryCount++;
+              isRetry = true;
               if (retryCount == maxRetryCount) {
                 db.abort();
                 throw new WorkloadException(e);
@@ -144,7 +149,7 @@ public class ClientThread implements Runnable {
                 Thread.sleep(waitTimeBeforeRetry);
               } catch (InterruptedException ie) {
                 Thread.currentThread().interrupt();
-                throw new WorkloadException("Thread interrupted during backoff", ie);
+                throw new WorkloadException("Thread interrupted during sleep", ie);
               }
             }
           }
