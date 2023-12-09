@@ -135,6 +135,10 @@ public class ClientThread implements Runnable {
               } else {
                 if (workload.doTransaction(db, workloadstate)) {
                   db.commit();
+                } else {
+                  isRetry = true;
+                  retryCount++;
+                  continue;
                 }
               }
               break;
