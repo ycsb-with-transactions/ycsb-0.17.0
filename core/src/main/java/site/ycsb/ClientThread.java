@@ -137,17 +137,15 @@ public class ClientThread implements Runnable {
               }
 
               retryCount++;
-              if (retryCount > maxRetryCount) {
-                db.abort();
-              }
+              db.abort();
 
             } catch (DBException e) {
               retryCount++;
-              if (retryCount > maxRetryCount) {
+//              if (retryCount > maxRetryCount) {
                 db.abort();
-                break;
+//                break;
 //                throw new WorkloadException(e);
-              }
+//              }
 
               try {
                 Thread.sleep(waitTimeBeforeRetry);
