@@ -349,53 +349,18 @@ public class CloudSpannerClient extends DB {
 
   @Override
   public Status update(String table, String key, Map<String, ByteIterator> values) {
-//    Mutation.WriteBuilder m = Mutation.newInsertOrUpdateBuilder(table);
-//    m.set(PRIMARY_KEY_COLUMN).to(key);
-//    for (Map.Entry<String, ByteIterator> e : values.entrySet()) {
-//      m.set(e.getKey()).to(e.getValue().toString());
-//    }
-//    try {
-//      tx.buffer(Arrays.asList(m.build()));
-//    } catch (Exception e) {
-//      LOGGER.log(Level.INFO, "update()", e);
-//      return Status.ERROR;
-//    }
-//    return Status.OK;
-
-      int retryCount = 0;
-      int maxRetries = 5; // You can adjust the maximum number of retries
-      long retryDelay = 50; // Starting retry delay in milliseconds, can be adjusted
-
-      while (true) {
-        try {
-          Mutation.WriteBuilder m = Mutation.newInsertOrUpdateBuilder(table);
-          m.set(PRIMARY_KEY_COLUMN).to(key);
-          for (Map.Entry<String, ByteIterator> e : values.entrySet()) {
-            m.set(e.getKey()).to(e.getValue().toString());
-          }
-          tx.buffer(Arrays.asList(m.build()));
-          return Status.OK; // Transaction successful
-        } catch (AbortedException ae) {
-          if (retryCount >= maxRetries) {
-            LOGGER.log(Level.INFO, "update(): Max retries reached", ae);
-            return Status.ERROR; // Max retries reached, return error
-          }
-          LOGGER.log(Level.INFO, "update(): Transaction aborted, retrying...", ae);
-          try {
-            Thread.sleep(retryDelay); // Wait before retrying
-          } catch (InterruptedException ie) {
-            Thread.currentThread().interrupt(); // Restore interrupt status
-            return Status.ERROR; // Thread interrupted, return error
-          }
-          retryCount++;
-          retryDelay *= 2; // Exponential backoff
-        } catch (Exception e) {
-          LOGGER.log(Level.INFO, "update(): Non-aborted exception", e);
-          return Status.ERROR; // Non-aborted exception, return error
-        }
-      }
-    
-
+    Mutation.WriteBuilder m = Mutation.newInsertOrUpdateBuilder(table);
+    m.set(PRIMARY_KEY_COLUMN).to(key);
+    for (Map.Entry<String, ByteIterator> e : values.entrySet()) {
+      m.set(e.getKey()).to(e.getValue().toString());
+    }
+    try {
+      tx.buffer(Arrays.asList(m.build()));
+    } catch (Exception e) {
+      LOGGER.log(Level.INFO, "update()", e);
+      return Status.ERROR;
+    }
+    return Status.OK;
   }
 
   @Override
