@@ -429,7 +429,7 @@ public class ClosedEconomyWorkload extends Workload {
       long expectedNewKeys = (long) (((double) opCount) * insertProportion
           * 2.0); // 2 is fudge factor
 
-      double theta = Long.parseLong(p.getProperty(ZIPFIAN_REQUEST_DISTRIBUTION_THETA,
+      double theta = Double.parseDouble(p.getProperty(ZIPFIAN_REQUEST_DISTRIBUTION_THETA,
           ZIPFIAN_REQUEST_DISTRIBUTION_THETA_DEFAULT));
 
       keyChooser = new ScrambledZipfianGenerator(insertStart, insertStart + recordCount + expectedNewKeys, theta);
