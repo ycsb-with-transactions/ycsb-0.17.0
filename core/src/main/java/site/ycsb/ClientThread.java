@@ -136,24 +136,25 @@ public class ClientThread implements Runnable {
                 break;
               }
 
-              retryCount++;
-              db.abort();
+//              retryCount++;
 
             } catch (DBException e) {
-              retryCount++;
+
+            }
+            retryCount++;
 //              if (retryCount > maxRetryCount) {
-                db.abort();
+            db.abort();
 //                break;
 //                throw new WorkloadException(e);
 //              }
 
-              try {
-                Thread.sleep(waitTimeBeforeRetry);
-              } catch (InterruptedException ie) {
-                Thread.currentThread().interrupt();
-                throw new WorkloadException("Thread interrupted during sleep", ie);
-              }
+            try {
+              Thread.sleep(waitTimeBeforeRetry);
+            } catch (InterruptedException ie) {
+              Thread.currentThread().interrupt();
+              throw new WorkloadException("Thread interrupted during sleep", ie);
             }
+
           }
 
           opsdone++;
