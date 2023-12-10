@@ -661,8 +661,8 @@ public class ClosedEconomyWorkload extends Workload {
         secondValues.put(DEFAULT_FIELD_NAME,
             new StringByteIterator(Long.toString(secondamount)));
 
-        if (!db.update(table, firstKey, firstValues).isOk() ||
-            !db.update(table, secondKey, secondValues).isOk()) {
+        if (!(db.update(table, firstKey, firstValues).isOk() &&
+            db.update(table, secondKey, secondValues).isOk())) {
           return false;
         }
 
