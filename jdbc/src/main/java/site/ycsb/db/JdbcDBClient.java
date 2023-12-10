@@ -215,7 +215,7 @@ public class JdbcDBClient extends DB {
         // operations should auto commit, except when explicitly told not to
         // (this is necessary in cases such as for PostgreSQL when running a
         // scan workload with fetchSize)
-        conn.setAutoCommit(autoCommit);
+//        conn.setAutoCommit(autoCommit);
 
         shardCount++;
         conns.add(conn);
