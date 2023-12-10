@@ -495,11 +495,11 @@ public class CockroachDBClient extends DB {
             e.printStackTrace();
             retryCount++;
             // rollback
-            try {
-              updateStatement.getConnection().rollback();
-            } catch (SQLException rollbackException) {
-              System.err.println("error rolling back the transaction: " + rollbackException.getMessage());
-            }
+            // try {
+            //   updateStatement.getConnection().rollback();
+            // } catch (SQLException rollbackException) {
+            //   System.err.println("error rolling back the transaction: " + rollbackException.getMessage());
+            // }
             applyBackoffStrategy(retryCount);
           } else {
             System.err.println("Non-retryable exceptioon ocuured in processing update: " + e.getMessage());
