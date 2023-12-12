@@ -22,7 +22,6 @@ import site.ycsb.ByteIterator;
 import site.ycsb.Status;
 import site.ycsb.StringByteIterator;
 import site.ycsb.workloads.ClosedEconomyWorkload;
-import site.ycsb.workloads.CoreWorkload;
 
 import java.sql.*;
 import java.util.*;
@@ -195,7 +194,7 @@ public class CockroachDBClient extends DB {
     String driver = props.getProperty(DRIVER_CLASS);
 
     // TODO: check if curr workload is closed_economy_workload?
-    constructStandardQueriesAndFields(props);
+    // constructStandardQueriesAndFields(props);
 
     if (driver.contains("sqlserver")) {
       sqlserver = true;
@@ -640,17 +639,24 @@ public class CockroachDBClient extends DB {
   @Override
   public long validate() throws DBException{
     super.validate();
-    long countedSum;
-    // TODO
+    long countedSum = 0L;
+    String validateQuery = "SELECT SUM(field0::numeric) FROM usertable;";
+
     try (Connection conn = conns.get(0);
-        PreparedStatement preparedStatement = conn.prepareStatement(standardValidate);
+        PreparedStatement preparedStatement = conn.prepareStatement(validateQuery);
         ResultSet resultSet = preparedStatement.executeQuery()) {
-      resultSet.next();
-      countedSum = resultSet.getLong(1);
-      if (resultSet.next()) {
-        System.err.println("Expected exactly one row for validation.");
-      }
-      return countedSum;
+
+        if (resultSet.next()) {
+            countedSum = resultSet.getLong(1);
+        } else {
+            System.err.println("No result found for validation.");
+        }
+
+        if (resultSet.next()) {
+            System.err.println("Expected exactly one row for validation.");
+        }
+
+        return countedSum;
     } catch (SQLException e) {
       System.err.println("Error in processing validate to table: " + e.getMessage());
       e.printStackTrace();
@@ -675,10 +681,13 @@ public class CockroachDBClient extends DB {
     return new OrderedFieldInfo(fieldKeys, fieldValues);
   }
 
+  // TODO: maybe no need this method
   private static void constructStandardQueriesAndFields(Properties properties) {
     String validateTable = properties.getProperty(ClosedEconomyWorkload.TABLE_NAME_PROPERTY, ClosedEconomyWorkload.TABLE_NAME_PROPERTY_DEFAULT);
     String validateField = properties.getProperty(ClosedEconomyWorkload.FIELD_NAME, ClosedEconomyWorkload.DEFAULT_FIELD_NAME);
-    standardValidate = new StringBuilder().append("SELECT SUM(CAST(").append(validateField).append(" AS INT64)) FROM ").append(validateTable).toString();
+    // For PostgreSQL not int type 64, integer
+    System.out.println("validate field: " + validateField);
+    standardValidate = new StringBuilder().append("SELECT SUM(").append(validateField).append(") FROM ").append(validateTable).toString();
   }
 
   private boolean isRetryableError(SQLException e) {
