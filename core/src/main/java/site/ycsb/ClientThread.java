@@ -142,7 +142,7 @@ public class ClientThread implements Runnable {
             } catch (DBException e) {
               // if commit fails, we retry too
               retryCount++;
-              db.abort();
+//              db.abort();
             }
 
             if (retryCount > maxRetryCount) {
