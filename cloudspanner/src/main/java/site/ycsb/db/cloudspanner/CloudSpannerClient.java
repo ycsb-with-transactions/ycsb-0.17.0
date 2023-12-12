@@ -253,7 +253,7 @@ public class CloudSpannerClient extends DB {
           tx = transactionManager.resetForRetry();
         } catch (InterruptedException ie) {
           System.err.println("Sleep was interrupted: " + ie.getMessage());
-          break;
+          return Status.ERROR;
         }
       } catch(Exception e) {
         LOGGER.log(Level.INFO, "readUsingQuery()", e);
@@ -313,7 +313,7 @@ public class CloudSpannerClient extends DB {
           tx = transactionManager.resetForRetry();
         } catch (InterruptedException ie) {
           System.err.println("Sleep was interrupted: " + ie.getMessage());
-          break;
+          return Status.ERROR;
         }
       } catch (Exception e) {
         LOGGER.log(Level.INFO, "scanUsingQuery()", e);
