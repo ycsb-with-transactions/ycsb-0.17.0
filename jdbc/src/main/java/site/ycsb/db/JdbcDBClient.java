@@ -551,4 +551,28 @@ public class JdbcDBClient extends DB {
 
     return new OrderedFieldInfo(fieldKeys, fieldValues);
   }
+
+  @Override
+  public long validate() throws DBException{
+    super.validate();
+    String query = new StringBuilder().append("SELECT SUM(CAST(").append("field0").
+        append(" AS SIGNED)) FROM ").append("usertable").toString();
+    long countedSum;
+    // TODO
+    try (Connection conn = conns.get(0);
+         PreparedStatement preparedStatement = conn.prepareStatement(query);
+         ResultSet resultSet = preparedStatement.executeQuery()) {
+      resultSet.next();
+      countedSum = resultSet.getLong(1);
+      if (resultSet.next()) {
+        System.err.println("Expected exactly one row for validation.");
+      }
+      return countedSum;
+    } catch (SQLException e) {
+      System.err.println("Error in processing validate to table: " + e.getMessage());
+      e.printStackTrace();
+      throw new DBException(e);
+    }
+  }
+
 }

@@ -59,5 +59,13 @@ LICENSE file.
       <artifactId>postgresql</artifactId>
       <version>42.2.27</version>
     </dependency>
+
+    <dependency>
+      <groupId>com.mysql</groupId>
+      <artifactId>mysql-connector-j</artifactId>
+      <version>8.1.0</version>
+    </dependency>
     </dependencies>
+
+
 </project>
