@@ -158,5 +158,11 @@ public abstract class DB {
   public Status readForUpdate(String table, String key, Set<String> fields,
                               Map<String, ByteIterator> result) {
     return read(table, key, fields, result);
+  }
+
+  public Status readModifyWrite(String table, Set<String> fields,
+                                String key1, Map<String, ByteIterator> result1,
+                                String key2, Map<String, ByteIterator> result2) {
+    return Status.NOT_IMPLEMENTED;
   };
 }

@@ -643,26 +643,30 @@ public class ClosedEconomyWorkload extends Workload {
     // do the transaction
     long st = System.nanoTime();
 
-    if (db.readForUpdate(table, firstKey, fields, firstValues).isOk() && db.readForUpdate(table, secondKey, fields,
-        secondValues).isOk()) {
-      try {
-        long firstamount = Long.parseLong(firstValues.get(DEFAULT_FIELD_NAME)
-            .toString());
-        long secondamount = Long.parseLong(secondValues.get(DEFAULT_FIELD_NAME)
-            .toString());
-
-        if (firstamount > 0) {
-          firstamount--;
-          secondamount++;
-        }
-
-        firstValues.put(DEFAULT_FIELD_NAME,
-            new StringByteIterator(Long.toString(firstamount)));
-        secondValues.put(DEFAULT_FIELD_NAME,
-            new StringByteIterator(Long.toString(secondamount)));
-
-        if (!(db.update(table, firstKey, firstValues).isOk() ||
-            !db.update(table, secondKey, secondValues).isOk())) {
+//    if (db.readForUpdate(table, firstKey, fields, firstValues).isOk() && db.readForUpdate(table, secondKey, fields,
+//        secondValues).isOk()) {
+//      try {
+//        long firstamount = Long.parseLong(firstValues.get(DEFAULT_FIELD_NAME)
+//            .toString());
+//        long secondamount = Long.parseLong(secondValues.get(DEFAULT_FIELD_NAME)
+//            .toString());
+//
+//        if (firstamount > 0) {
+//          firstamount--;
+//          secondamount++;
+//        }
+//
+//        firstValues.put(DEFAULT_FIELD_NAME,
+//            new StringByteIterator(Long.toString(firstamount)));
+//        secondValues.put(DEFAULT_FIELD_NAME,
+//            new StringByteIterator(Long.toString(secondamount)));
+//
+//        if (!(db.update(table, firstKey, firstValues).isOk() ||
+//            !db.update(table, secondKey, secondValues).isOk())) {
+//          return false;
+//        }
+    try{
+        if (!db.readModifyWrite(table, fields, firstKey, firstValues, secondKey, secondValues).isOk()) {
           return false;
         }
 
@@ -674,8 +678,8 @@ public class ClosedEconomyWorkload extends Workload {
         return false;
       }
       return true;
-    }
-    return false;
+//    }
+//    return false;
   }
 
   public boolean doTransactionScan(DB db) {
