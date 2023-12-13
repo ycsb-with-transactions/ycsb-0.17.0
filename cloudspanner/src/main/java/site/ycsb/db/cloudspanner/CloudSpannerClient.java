@@ -464,4 +464,13 @@ public class CloudSpannerClient extends DB {
       throw new DBException(e);
     }
   }
+
+  @Override
+  public Status readModifyWrite(String table, Set<String> fields,
+                                String key1, Map<String, ByteIterator> result1,
+                                String key2, Map<String, ByteIterator> result2) {
+    Status status1 = update(table, key1, result1);
+    Status status2 = update(table, key2, result2);
+    return status1.isOk() && status2.isOk() ? Status.OK : Status.ERROR;
+  }
 }
