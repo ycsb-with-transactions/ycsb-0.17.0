@@ -154,4 +154,9 @@ public abstract class DB {
    * @return The result of the operation.
    */
   public abstract Status delete(String table, String key);
+
+  public Status readForUpdate(String table, String key, Set<String> fields,
+                              Map<String, ByteIterator> result) {
+    return read(table, key, fields, result);
+  };
 }

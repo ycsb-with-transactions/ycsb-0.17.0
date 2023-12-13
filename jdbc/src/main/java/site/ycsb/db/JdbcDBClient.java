@@ -322,6 +322,14 @@ public class JdbcDBClient extends DB {
     return stmt;
   }
 
+  private PreparedStatement createAndCacheReadForUpdateStatement(String table, String key)
+      throws SQLException {
+    StringBuilder readForUpdate = new StringBuilder("SELECT * FROM ").append(table).append(" WHERE ")
+        .append(JdbcDBClient.PRIMARY_KEY).append(" = ").append("?").append(" FOR UPDATE");
+    PreparedStatement readStatement = getShardConnectionByKey(key).prepareStatement(readForUpdate.toString());
+    return readStatement;
+  }
+
   private PreparedStatement createAndCacheDeleteStatement(StatementType deleteType, String key)
       throws SQLException {
     String delete = dbFlavor.createDeleteStatement(deleteType, key);
@@ -572,6 +580,32 @@ public class JdbcDBClient extends DB {
       System.err.println("Error in processing validate to table: " + e.getMessage());
       e.printStackTrace();
       throw new DBException(e);
+    }
+  }
+
+  @Override
+  public Status readForUpdate(String table, String key, Set<String> fields,
+                              Map<String, ByteIterator> result) {
+    try{
+      PreparedStatement readForUpdateStatement = createAndCacheReadForUpdateStatement(table, key);
+
+      readForUpdateStatement.setString(1, key);
+      ResultSet resultSet = readForUpdateStatement.executeQuery();
+      if (!resultSet.next()) {
+        resultSet.close();
+        return Status.NOT_FOUND;
+      }
+      if (result != null && fields != null) {
+        for (String field : fields) {
+          String value = resultSet.getString(field);
+          result.put(field, new StringByteIterator(value));
+        }
+      }
+      resultSet.close();
+      return Status.OK;
+    } catch (SQLException e) {
+      System.err.println("Error in processing read of table " + table + ": " + e);
+      return Status.ERROR;
     }
   }
 
