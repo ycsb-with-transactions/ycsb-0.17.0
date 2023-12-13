@@ -72,6 +72,9 @@ public class JdbcDBClient extends DB {
   /** The name of the property for the number of fields in a record. */
   public static final String FIELD_COUNT_PROPERTY = "fieldcount";
 
+  /** Connection serializable, default is not enabled. */
+  public static final String CONN_SERIALIZABLE = "conn.serializable";
+
   /** Default number of fields in a record. */
   public static final String FIELD_COUNT_PROPERTY_DEFAULT = "10";
 
@@ -185,6 +188,7 @@ public class JdbcDBClient extends DB {
     String user = props.getProperty(CONNECTION_USER, DEFAULT_PROP);
     String passwd = props.getProperty(CONNECTION_PASSWD, DEFAULT_PROP);
     String driver = props.getProperty(DRIVER_CLASS);
+    String serializable = props.getProperty(CONN_SERIALIZABLE);
 
     if (driver.contains("sqlserver")) {
       sqlserver = true;
@@ -216,6 +220,11 @@ public class JdbcDBClient extends DB {
         // (this is necessary in cases such as for PostgreSQL when running a
         // scan workload with fetchSize)
 //        conn.setAutoCommit(autoCommit);
+
+        // Set isolation level to SERIALIZABLE
+        if (serializable != null && serializable.equals("true")) {
+          conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+        }
 
         shardCount++;
         conns.add(conn);
@@ -322,12 +331,23 @@ public class JdbcDBClient extends DB {
     return stmt;
   }
 
+  /** implemented for closed_economy_workload */
   private PreparedStatement createAndCacheReadForUpdateStatement(String table, String key)
       throws SQLException {
+    // if this method works, we may need to add this method to DBFlavor interface, and have associated type/key
+    // String readForUpdateStatement = dbFlavor.createReadForUpdateStatement(table, key);
+
+    // SELECT * FROM <table> WHERE <primary_key> = ? FOR UPDATE
     StringBuilder readForUpdate = new StringBuilder("SELECT * FROM ").append(table).append(" WHERE ")
         .append(JdbcDBClient.PRIMARY_KEY).append(" = ").append("?").append(" FOR UPDATE");
-    PreparedStatement readStatement = getShardConnectionByKey(key).prepareStatement(readForUpdate.toString());
-    return readStatement;
+    PreparedStatement readForUpdateStatement = getShardConnectionByKey(key).prepareStatement(readForUpdate.toString());
+
+    // cache the statement if it is not cached, for concurrent threads
+    PreparedStatement stmt = cachedStatements.putIfAbsent(null, readForUpdateStatement);
+    if (stmt == null) {
+      return readForUpdateStatement;
+    }
+    return stmt;
   }
 
   private PreparedStatement createAndCacheDeleteStatement(StatementType deleteType, String key)
@@ -482,7 +502,7 @@ public class JdbcDBClient extends DB {
             int[] results = insertStatement.executeBatch();
             for (int r : results) {
               // Acceptable values are 1 and SUCCESS_NO_INFO (-2) from reWriteBatchedInserts=true
-              if (r != 1 && r != -2) { 
+              if (r != 1 && r != -2) {
                 return Status.ERROR;
               }
             }
@@ -560,22 +580,34 @@ public class JdbcDBClient extends DB {
     return new OrderedFieldInfo(fieldKeys, fieldValues);
   }
 
+  /** implemented for closed_economy_workload */
   @Override
   public long validate() throws DBException{
     super.validate();
-    String query = new StringBuilder().append("SELECT SUM(CAST(").append("field0").
-        append(" AS SIGNED)) FROM ").append("usertable").toString();
-    long countedSum;
-    // TODO
+
+    /** check driver class and pass corresponding validate query */
+    String driverClass = props.getProperty(DRIVER_CLASS);
+    String psqlValidateQuery = "SELECT SUM(field0::numeric) FROM usertable;";
+    String mysqlValidateQuery = "SELECT SUM(CAST(field0 AS SIGNED)) FROM usertable;";
+    String query = driverClass.contains("mysql") ? mysqlValidateQuery : psqlValidateQuery;
+
+    // initialize to 0
+    long countedSum = 0L;
+
     try (Connection conn = conns.get(0);
          PreparedStatement preparedStatement = conn.prepareStatement(query);
          ResultSet resultSet = preparedStatement.executeQuery()) {
-      resultSet.next();
-      countedSum = resultSet.getLong(1);
-      if (resultSet.next()) {
-        System.err.println("Expected exactly one row for validation.");
-      }
-      return countedSum;
+        if (resultSet.next()) {
+            countedSum = resultSet.getLong(1);
+        } else {
+            System.err.println("No result found for validation.");
+        }
+
+        if (resultSet.next()) {
+            System.err.println("Expected exactly one row for validation.");
+        }
+
+        return countedSum;
     } catch (SQLException e) {
       System.err.println("Error in processing validate to table: " + e.getMessage());
       e.printStackTrace();
@@ -583,6 +615,7 @@ public class JdbcDBClient extends DB {
     }
   }
 
+  /** For closed_economy_workload */
   @Override
   public Status readForUpdate(String table, String key, Set<String> fields,
                               Map<String, ByteIterator> result) {
@@ -604,7 +637,7 @@ public class JdbcDBClient extends DB {
       resultSet.close();
       return Status.OK;
     } catch (SQLException e) {
-      System.err.println("Error in processing read of table " + table + ": " + e);
+      System.err.println("Error in processing read for update of table " + table + ": " + e);
       return Status.ERROR;
     }
   }
