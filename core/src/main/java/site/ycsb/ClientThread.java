@@ -136,19 +136,16 @@ public class ClientThread implements Runnable {
                 break;
               }
 
-              retryCount++;
-              db.abort();
-
-            } catch (DBException e) {
-              // if commit fails, we retry too
-              retryCount++;
-              db.abort();
+            } catch (DBException ignored) {
+              // ignored
             }
 
+            // if transaction operation fails or commit fails, we retry and abort the previous transaction
+            retryCount++;
+            db.abort();
+
             if (retryCount > maxRetryCount) {
-//              db.abort();
               break;
-//                throw new WorkloadException(e);
             }
 
             try {

@@ -643,10 +643,9 @@ public class ClosedEconomyWorkload extends Workload {
 
     // do the transaction
     long st = System.nanoTime();
-    Status firstReadStatus = db.readForUpdate(table, firstKey, fields, firstValues);
-    Status secondReadStatus = db.readForUpdate(table, secondKey, fields, secondValues);
 
-    if (firstReadStatus.isOk() && secondReadStatus.isOk()) {
+    if (db.readForUpdate(table, firstKey, fields, firstValues).isOk() &&
+        db.readForUpdate(table, secondKey, fields, secondValues).isOk()) {
       try {
         long firstamount = Long.parseLong(firstValues.get(DEFAULT_FIELD_NAME)
             .toString());
@@ -663,10 +662,8 @@ public class ClosedEconomyWorkload extends Workload {
         secondValues.put(DEFAULT_FIELD_NAME,
             new StringByteIterator(Long.toString(secondamount)));
 
-        Status status1 = db.update(table, firstKey, firstValues);
-        Status status2 = db.update(table, secondKey, secondValues);
-
-        if (!status1.isOk() || !status2.isOk()) return false;
+        if (!db.update(table, firstKey, firstValues).isOk() ||
+            !db.update(table, secondKey, secondValues).isOk()) return false;
 
         long en = System.nanoTime();
 
