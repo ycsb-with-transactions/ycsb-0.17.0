@@ -222,9 +222,9 @@ public class JdbcDBClient extends DB {
 //        conn.setAutoCommit(autoCommit);
 
         // Set isolation level to SERIALIZABLE
-        if (serializable != null && serializable.equals("true")) {
+//        if (serializable != null && serializable.equals("true")) {
           conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-        }
+//        }
 
         shardCount++;
         conns.add(conn);
@@ -343,11 +343,12 @@ public class JdbcDBClient extends DB {
     PreparedStatement readForUpdateStatement = getShardConnectionByKey(key).prepareStatement(readForUpdate.toString());
 
     // cache the statement if it is not cached, for concurrent threads
-    PreparedStatement stmt = cachedStatements.putIfAbsent(null, readForUpdateStatement);
-    if (stmt == null) {
-      return readForUpdateStatement;
-    }
-    return stmt;
+//    PreparedStatement stmt = cachedStatements.putIfAbsent(null, readForUpdateStatement);
+//    if (stmt == null) {
+//      return readForUpdateStatement;
+//    }
+//    return stmt;
+    return readForUpdateStatement;
   }
 
   private PreparedStatement createAndCacheDeleteStatement(StatementType deleteType, String key)
@@ -465,6 +466,8 @@ public class JdbcDBClient extends DB {
         updateStatement.setString(index++, value);
       }
       updateStatement.setString(index, key);
+      System.err.println(updateStatement);
+      System.out.println(updateStatement);
       int result = updateStatement.executeUpdate();
       if (result == 1) {
         return Status.OK;
@@ -623,6 +626,7 @@ public class JdbcDBClient extends DB {
       PreparedStatement readForUpdateStatement = createAndCacheReadForUpdateStatement(table, key);
 
       readForUpdateStatement.setString(1, key);
+      System.out.println(readForUpdateStatement);
       ResultSet resultSet = readForUpdateStatement.executeQuery();
       if (!resultSet.next()) {
         resultSet.close();

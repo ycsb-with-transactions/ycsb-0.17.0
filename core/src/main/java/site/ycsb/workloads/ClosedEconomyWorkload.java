@@ -643,32 +643,42 @@ public class ClosedEconomyWorkload extends Workload {
     // do the transaction
     long st = System.nanoTime();
 
-//    if (db.readForUpdate(table, firstKey, fields, firstValues).isOk() && db.readForUpdate(table, secondKey, fields,
-//        secondValues).isOk()) {
-//      try {
-//        long firstamount = Long.parseLong(firstValues.get(DEFAULT_FIELD_NAME)
-//            .toString());
-//        long secondamount = Long.parseLong(secondValues.get(DEFAULT_FIELD_NAME)
-//            .toString());
-//
-//        if (firstamount > 0) {
-//          firstamount--;
-//          secondamount++;
-//        }
-//
-//        firstValues.put(DEFAULT_FIELD_NAME,
-//            new StringByteIterator(Long.toString(firstamount)));
-//        secondValues.put(DEFAULT_FIELD_NAME,
-//            new StringByteIterator(Long.toString(secondamount)));
-//
+    if (db.readForUpdate(table, firstKey, fields, firstValues).isOk() && db.readForUpdate(table, secondKey, fields,
+        secondValues).isOk()) {
+      try {
+        long firstamount = Long.parseLong(firstValues.get(DEFAULT_FIELD_NAME)
+            .toString());
+        long secondamount = Long.parseLong(secondValues.get(DEFAULT_FIELD_NAME)
+            .toString());
+
+        if (firstamount > 0) {
+          firstamount--;
+          secondamount++;
+        }
+
+        firstValues.put(DEFAULT_FIELD_NAME,
+            new StringByteIterator(Long.toString(firstamount)));
+        secondValues.put(DEFAULT_FIELD_NAME,
+            new StringByteIterator(Long.toString(secondamount)));
+
+
+
 //        if (!(db.update(table, firstKey, firstValues).isOk() ||
 //            !db.update(table, secondKey, secondValues).isOk())) {
 //          return false;
 //        }
-    try{
-        if (!db.readModifyWrite(table, fields, firstKey, firstValues, secondKey, secondValues).isOk()) {
-          return false;
-        }
+        Status status1 = db.update(table, firstKey, firstValues);
+        Status status2 = db.update(table, secondKey, secondValues);
+
+        System.err.printf("First key: %s, firstVal: %s, firstStatus: %s;   " +
+            "Second key: %s, secondVal: %s, secondStatus: %s\n", firstKey, firstamount, status1.isOk(),
+            secondKey, secondamount, status2.isOk());
+        System.out.printf("First key: %s, firstVal: %s, firstStatus: %s;   " +
+                "Second key: %s, secondVal: %s, secondStatus: %s\n", firstKey, firstamount, status1.isOk(),
+            secondKey, secondamount, status2.isOk());
+
+
+        if (!status1.isOk() || ! status2.isOk()) return false;
 
         long en = System.nanoTime();
 
@@ -678,8 +688,8 @@ public class ClosedEconomyWorkload extends Workload {
         return false;
       }
       return true;
-//    }
-//    return false;
+    }
+    return false;
   }
 
   public boolean doTransactionScan(DB db) {
