@@ -627,14 +627,15 @@ public class ClosedEconomyWorkload extends Workload {
     String firstKey = buildKeyName(first);
     String secondKey = buildKeyName(second);
 
-    HashSet<String> fields = null;
+    HashSet<String> fields = new HashSet<>();
 
     if (!readAllFields) {
       // read a random field
       String fieldName = "field" + fieldChooser.nextString();
 
-      fields = new HashSet<>();
       fields.add(fieldName);
+    } else {
+      fields.add(DEFAULT_FIELD_NAME);
     }
 
     HashMap<String, ByteIterator> firstValues = buildValues();
@@ -642,9 +643,10 @@ public class ClosedEconomyWorkload extends Workload {
 
     // do the transaction
     long st = System.nanoTime();
+    Status firstReadStatus = db.readForUpdate(table, firstKey, fields, firstValues);
+    Status secondReadStatus = db.readForUpdate(table, secondKey, fields, secondValues);
 
-    if (db.readForUpdate(table, firstKey, fields, firstValues).isOk() && db.readForUpdate(table, secondKey, fields,
-        secondValues).isOk()) {
+    if (firstReadStatus.isOk() && secondReadStatus.isOk()) {
       try {
         long firstamount = Long.parseLong(firstValues.get(DEFAULT_FIELD_NAME)
             .toString());
@@ -661,24 +663,10 @@ public class ClosedEconomyWorkload extends Workload {
         secondValues.put(DEFAULT_FIELD_NAME,
             new StringByteIterator(Long.toString(secondamount)));
 
-
-
-//        if (!(db.update(table, firstKey, firstValues).isOk() ||
-//            !db.update(table, secondKey, secondValues).isOk())) {
-//          return false;
-//        }
         Status status1 = db.update(table, firstKey, firstValues);
         Status status2 = db.update(table, secondKey, secondValues);
 
-        System.err.printf("First key: %s, firstVal: %s, firstStatus: %s;   " +
-            "Second key: %s, secondVal: %s, secondStatus: %s\n", firstKey, firstamount, status1.isOk(),
-            secondKey, secondamount, status2.isOk());
-        System.out.printf("First key: %s, firstVal: %s, firstStatus: %s;   " +
-                "Second key: %s, secondVal: %s, secondStatus: %s\n", firstKey, firstamount, status1.isOk(),
-            secondKey, secondamount, status2.isOk());
-
-
-        if (!status1.isOk() || ! status2.isOk()) return false;
+        if (!status1.isOk() || !status2.isOk()) return false;
 
         long en = System.nanoTime();
 

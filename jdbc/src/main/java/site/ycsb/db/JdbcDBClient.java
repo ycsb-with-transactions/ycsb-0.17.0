@@ -16,19 +16,14 @@
  */
 package site.ycsb.db;
 
-import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory;
-import site.ycsb.DB;
-import site.ycsb.DBException;
-import site.ycsb.ByteIterator;
-import site.ycsb.Status;
-import site.ycsb.StringByteIterator;
+import site.ycsb.*;
+import site.ycsb.db.flavors.DBFlavor;
 
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import site.ycsb.db.flavors.DBFlavor;
 
 /**
  * A class that wraps a JDBC compliant database to allow it to be interfaced
@@ -74,6 +69,8 @@ public class JdbcDBClient extends DB {
 
   /** Connection serializable, default is not enabled. */
   public static final String CONN_SERIALIZABLE = "conn.serializable";
+
+  public static final String DEFAULT_CONN_SERIALIZABLE = "true";
 
   /** Default number of fields in a record. */
   public static final String FIELD_COUNT_PROPERTY_DEFAULT = "10";
@@ -188,7 +185,7 @@ public class JdbcDBClient extends DB {
     String user = props.getProperty(CONNECTION_USER, DEFAULT_PROP);
     String passwd = props.getProperty(CONNECTION_PASSWD, DEFAULT_PROP);
     String driver = props.getProperty(DRIVER_CLASS);
-    String serializable = props.getProperty(CONN_SERIALIZABLE);
+    boolean isSerializable = (Boolean.parseBoolean(props.getProperty(CONN_SERIALIZABLE, DEFAULT_CONN_SERIALIZABLE)));
 
     if (driver.contains("sqlserver")) {
       sqlserver = true;
@@ -197,7 +194,7 @@ public class JdbcDBClient extends DB {
     this.jdbcFetchSize = getIntProperty(props, JDBC_FETCH_SIZE);
     this.batchSize = getIntProperty(props, DB_BATCH_SIZE);
 
-//    this.autoCommit = getBoolProperty(props, JDBC_AUTO_COMMIT, true);
+    // for transactional testing, force auto-commit off
     this.autoCommit = false;
     this.batchUpdates = getBoolProperty(props, JDBC_BATCH_UPDATES, false);
 
@@ -219,12 +216,11 @@ public class JdbcDBClient extends DB {
         // operations should auto commit, except when explicitly told not to
         // (this is necessary in cases such as for PostgreSQL when running a
         // scan workload with fetchSize)
-//        conn.setAutoCommit(autoCommit);
 
         // Set isolation level to SERIALIZABLE
-//        if (serializable != null && serializable.equals("true")) {
+        if (isSerializable) {
           conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-//        }
+        }
 
         shardCount++;
         conns.add(conn);
@@ -267,6 +263,7 @@ public class JdbcDBClient extends DB {
     try {
       conns.get(0).commit();
     } catch (JdbcSqlExceptionFactory.JdbcAbortedException ae) {
+      ae.printStackTrace();
       throw new DBException(ae);
     } catch (SQLException e) {
       e.printStackTrace();
@@ -466,8 +463,6 @@ public class JdbcDBClient extends DB {
         updateStatement.setString(index++, value);
       }
       updateStatement.setString(index, key);
-      System.err.println(updateStatement);
-      System.out.println(updateStatement);
       int result = updateStatement.executeUpdate();
       if (result == 1) {
         return Status.OK;
@@ -626,7 +621,6 @@ public class JdbcDBClient extends DB {
       PreparedStatement readForUpdateStatement = createAndCacheReadForUpdateStatement(table, key);
 
       readForUpdateStatement.setString(1, key);
-      System.out.println(readForUpdateStatement);
       ResultSet resultSet = readForUpdateStatement.executeQuery();
       if (!resultSet.next()) {
         resultSet.close();
