@@ -469,8 +469,24 @@ public class CloudSpannerClient extends DB {
   public Status readModifyWrite(String table, Set<String> fields,
                                 String key1, Map<String, ByteIterator> result1,
                                 String key2, Map<String, ByteIterator> result2) {
-    Status status1 = update(table, key1, result1);
-    Status status2 = update(table, key2, result2);
+    Status status1 = updateFieldValue(table, key1, result1, -1);
+    Status status2 = updateFieldValue(table, key2, result2, 1);
     return status1.isOk() && status2.isOk() ? Status.OK : Status.ERROR;
+  }
+
+  private Status updateFieldValue(String table, String key, Map<String, ByteIterator> values, int increment) {
+    Mutation.WriteBuilder m = Mutation.newInsertOrUpdateBuilder(table);
+    m.set(PRIMARY_KEY_COLUMN).to(key);
+    for (Map.Entry<String, ByteIterator> e : values.entrySet()) {
+      int newVal = Integer.parseInt(e.getValue().toString()) + increment;
+      m.set(e.getKey()).to(String.valueOf(newVal));
+    }
+    try {
+      tx.buffer(Arrays.asList(m.build()));
+    } catch (Exception e) {
+      LOGGER.log(Level.INFO, "updateFieldValue()", e);
+      return Status.ERROR;
+    }
+    return Status.OK;
   }
 }
