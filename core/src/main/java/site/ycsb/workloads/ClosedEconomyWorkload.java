@@ -680,8 +680,6 @@ public class ClosedEconomyWorkload extends Workload {
       }
       return true;
     }
-    System.err.printf(Thread.currentThread().getName() +  " - FAILED");
-    System.out.printf(Thread.currentThread().getName() + " - FAILED");
     return false;
   }
 
