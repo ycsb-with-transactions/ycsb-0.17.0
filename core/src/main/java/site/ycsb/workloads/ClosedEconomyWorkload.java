@@ -665,22 +665,23 @@ public class ClosedEconomyWorkload extends Workload {
         if (!db.update(table, firstKey, firstValues).isOk() ||
             !db.update(table, secondKey, secondValues).isOk()) return false;
 
-        System.err.printf("First key: %s, firstVal: %s;   " +
-                "Second key: %s, secondVal: %s\n", firstKey, firstamount,
-            secondKey, secondamount);
-        System.out.printf("First key: %s, firstVal: %s;   " +
-                "Second key: %s, secondVal: %s\n", firstKey, firstamount,
-            secondKey, secondamount);
-
         long en = System.nanoTime();
 
         Measurements.getMeasurements().measure("READ-MODIFY-WRITE",
             (int) (en - st) / 1000);
+        System.err.printf(Thread.currentThread().getName() + "First key: %s, firstVal: %s;   " +
+                "Second key: %s, secondVal: %s\n", firstKey, firstamount,
+            secondKey, secondamount + " - SUCCESS");
+        System.out.printf(Thread.currentThread().getName() + "First key: %s, firstVal: %s;   " +
+                "Second key: %s, secondVal: %s\n", firstKey, firstamount,
+            secondKey, secondamount+ " - SUCCESS");
       } catch (NumberFormatException e) {
         return false;
       }
       return true;
     }
+    System.err.printf(Thread.currentThread().getName() +  " - FAILED");
+    System.out.printf(Thread.currentThread().getName() + " - FAILED");
     return false;
   }
 
