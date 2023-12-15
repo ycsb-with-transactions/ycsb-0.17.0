@@ -155,7 +155,7 @@ public class CloudSpannerClient extends DB {
         .setSessionPoolOption(SessionPoolOptions.newBuilder()
             .setMinSessions(numThreads)
             // Since we have no read-write transactions, we can set the write session fraction to 0.
-            .setWriteSessionsFraction(0)
+//            .setWriteSessionsFraction(0)
             .build());
     if (host != null) {
       optionsBuilder.setHost(host);
