@@ -143,8 +143,8 @@ public class ClientThread implements Runnable {
             // if transaction operation fails or commit fails, we retry and abort the previous transaction
             retryCount++;
             db.abort();
-            System.err.printf(Thread.currentThread().getName() +  " - FAILED");
-            System.out.printf(Thread.currentThread().getName() + " - FAILED");
+            System.err.printf(Thread.currentThread().getName() +  " - FAILED\n");
+            System.out.printf(Thread.currentThread().getName() + " - FAILED\n");
 
             if (retryCount > maxRetryCount) {
               break;
