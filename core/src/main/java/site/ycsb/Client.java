@@ -237,6 +237,11 @@ public final class Client {
         exporter = new TextMeasurementsExporter(out);
       }
 
+      int threadcount = Integer.parseInt(props.getProperty(THREAD_COUNT_PROPERTY, "1"));
+      String dbname = props.getProperty(DB_PROPERTY, "site.ycsb.BasicDB");
+      System.out.printf("CONFIG, DB_Name, %s\n", dbname);
+      exporter.write("CONFIG", "Thread_Count", threadcount);
+
       exporter.write("OVERALL", "RunTime(ms)", runtime);
       double throughput = 1000.0 * (opcount) / (runtime);
       exporter.write("OVERALL", "Throughput(ops/sec)", throughput);

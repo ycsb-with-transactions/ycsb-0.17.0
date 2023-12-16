@@ -527,6 +527,8 @@ public class CoreWorkload extends Workload {
         INSERTION_RETRY_LIMIT, INSERTION_RETRY_LIMIT_DEFAULT));
     insertionRetryInterval = Integer.parseInt(p.getProperty(
         INSERTION_RETRY_INTERVAL, INSERTION_RETRY_INTERVAL_DEFAULT));
+    System.out.printf("CONFIG, Record_Count, %s\n", recordcount);
+    System.out.printf("CONFIG, Request_Distrib, %s\n", requestdistrib);
   }
 
   protected String buildKeyName(long keynum) {

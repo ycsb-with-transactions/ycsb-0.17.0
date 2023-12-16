@@ -242,7 +242,7 @@ public class CloudSpannerClient extends DB {
       resultSet.next();
       decodeStruct(columns, resultSet, result);
       if (resultSet.next()) {
-        throw new Exception("Expected exactly one row for each read.");
+        LOGGER.log(Level.INFO, "readUsingQuery(): Expected exactly one row for each read.");
       }
       return Status.OK;
     } catch (AbortedException ae) {
@@ -451,7 +451,10 @@ public class CloudSpannerClient extends DB {
   }
 
   private Status updateUsingQuery(String table, String key, Map<String, ByteIterator> values){
-    if (values == null || values.isEmpty()) return Status.ERROR;
+    if (values == null || values.isEmpty()) {
+      LOGGER.log(Level.INFO, "updateUsingQuery(): Values are null.");
+      return Status.ERROR;
+    }
 
     HashSet<String> fields = new HashSet<>(values.keySet());
     Builder statementBuilder = Statement.newBuilder("UPDATE " + table + " SET ");
