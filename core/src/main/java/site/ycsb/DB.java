@@ -159,10 +159,4 @@ public abstract class DB {
                               Map<String, ByteIterator> result) {
     return read(table, key, fields, result);
   }
-
-  public Status readModifyWrite(String table, Set<String> fields,
-                                String key1, Map<String, ByteIterator> result1,
-                                String key2, Map<String, ByteIterator> result2) {
-    return Status.NOT_IMPLEMENTED;
-  };
 }

@@ -669,12 +669,6 @@ public class ClosedEconomyWorkload extends Workload {
 
         Measurements.getMeasurements().measure("READ-MODIFY-WRITE",
             (int) (en - st) / 1000);
-//        System.err.printf(Thread.currentThread().getName() + "  First key: %s, firstVal: %s;   " +
-//                "Second key: %s, secondVal: %s\n", firstKey, firstamount,
-//            secondKey, secondamount + " - SUCCESS");
-//        System.out.printf(Thread.currentThread().getName() + "  First key: %s, firstVal: %s;   " +
-//                "Second key: %s, secondVal: %s\n", firstKey, firstamount,
-//            secondKey, secondamount+ " - SUCCESS");
       } catch (NumberFormatException e) {
         return false;
       }

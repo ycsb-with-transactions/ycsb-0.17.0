@@ -237,30 +237,7 @@ public class CloudSpannerClient extends DB {
           .bind("key").to(key)
           .build();
     }
-
-//    while (true) {
-//      try (ResultSet resultSet = tx.executeQuery(query)) {
-//        resultSet.next();
-//        decodeStruct(columns, resultSet, result);
-//        if (resultSet.next()) {
-//          throw new Exception("Expected exactly one row for each read.");
-//        }
-//        break;
-//      } catch (AbortedException ae) {
-//        try {
-//          Thread.sleep(ae.getRetryDelayInMillis() / 1000);
-//          tx = transactionManager.resetForRetry();
-//        } catch (InterruptedException ie) {
-//          System.err.println("Sleep was interrupted: " + ie.getMessage());
-//          return Status.ERROR;
-//        }
-//      } catch(Exception e) {
-//        LOGGER.log(Level.INFO, "readUsingQuery()", e);
-//        return Status.ERROR;
-//      }
-//    }
-//    return Status.OK;
-
+    
     try (ResultSet resultSet = tx.executeQuery(query)) {
       resultSet.next();
       decodeStruct(columns, resultSet, result);
@@ -274,7 +251,7 @@ public class CloudSpannerClient extends DB {
       LOGGER.log(Level.INFO, "readUsingQuery()", e);
       return Status.ERROR;
     }
-    
+
   }
 
   @Override
@@ -482,31 +459,6 @@ public class CloudSpannerClient extends DB {
     }
   }
 
-  @Override
-  public Status readModifyWrite(String table, Set<String> fields,
-                                String key1, Map<String, ByteIterator> result1,
-                                String key2, Map<String, ByteIterator> result2) {
-    Status status1 = updateFieldValue(table, key1, result1, -1);
-    Status status2 = updateFieldValue(table, key2, result2, 1);
-    return status1.isOk() && status2.isOk() ? Status.OK : Status.ERROR;
-  }
-
-  private Status updateFieldValue(String table, String key, Map<String, ByteIterator> values, int increment) {
-    Mutation.WriteBuilder m = Mutation.newInsertOrUpdateBuilder(table);
-    m.set(PRIMARY_KEY_COLUMN).to(key);
-    for (Map.Entry<String, ByteIterator> e : values.entrySet()) {
-      int newVal = Integer.parseInt(e.getValue().toString()) + increment;
-      m.set(e.getKey()).to(String.valueOf(newVal));
-    }
-    try {
-      tx.buffer(Arrays.asList(m.build()));
-    } catch (Exception e) {
-      LOGGER.log(Level.INFO, "updateFieldValue()", e);
-      return Status.ERROR;
-    }
-    return Status.OK;
-  }
-
   private Status updateUsingQuery(String table, String key, Map<String, ByteIterator> values){
     if (values == null || values.isEmpty()) return Status.ERROR;
 
@@ -530,9 +482,6 @@ public class CloudSpannerClient extends DB {
     }
     Statement query = boundStatementBuilder.build();
 
-//    int maxRetryCount = 5;
-//    int currRetryCount = 0;
-//    while (currRetryCount <= maxRetryCount) {
       try {
         long rowCount = tx.executeUpdate(query);
         if (rowCount != 1) {
@@ -541,21 +490,10 @@ public class CloudSpannerClient extends DB {
         return Status.OK;
       } catch (AbortedException ae) {
         return Status.ERROR;
-//        currRetryCount++;
-//        try {
-//          Thread.sleep(ae.getRetryDelayInMillis() / 1000);
-//          tx = transactionManager.resetForRetry();
-//        } catch (InterruptedException ie) {
-//          System.err.println("Sleep was interrupted: " + ie.getMessage());
-//          return Status.ERROR;
-//        }
       } catch(Exception e) {
         LOGGER.log(Level.INFO, "updateUsingQuery()", e);
         return Status.ERROR;
       }
-//    }
-    // exceeds max retry count;
-//    return Status.ERROR;
   }
 
  }
