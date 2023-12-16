@@ -100,9 +100,6 @@ public class DBWrapper extends DB {
         }
       }
 
-//      System.err.println("DBWrapper: report latency for each error is " +
-//          this.reportLatencyForEachError + " and specific error codes to track" +
-//          " for latency are: " + this.latencyTrackedErrors.toString());
       if (LOG_REPORT_CONFIG.compareAndSet(false, true)) {
         System.err.println("DBWrapper: report latency for each error is " +
             this.reportLatencyForEachError + " and specific error codes to track" +
@@ -149,8 +146,8 @@ public class DBWrapper extends DB {
       measurements.reportStatus("COMMIT", Status.OK);
     } catch (DBException e) {
       long en = System.nanoTime();
-      measurements.measure("COMMIT-FAILED-FOR-RETRY", (int) ((en - st) / 1000));
-      measurements.reportStatus("COMMIT-FAILED-FOR-RETRY", Status.ERROR);
+      measurements.measure("COMMIT", (int) ((en - st) / 1000));
+      measurements.reportStatus("COMMIT", Status.ERROR);
       throw e;
     }
 	}
