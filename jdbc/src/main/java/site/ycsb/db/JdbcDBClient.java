@@ -83,6 +83,8 @@ public class JdbcDBClient extends DB {
 
   /** The field name prefix in the table. */
   public static final String COLUMN_PREFIX = "FIELD";
+  public static final String SELECT_FOR_UPDATE = "db.selectForUpdate";
+  public static final boolean DEFAULT_SELECT_FOR_UPDATE = false;
 
   private boolean sqlserver = false;
   private List<Connection> conns;
@@ -98,6 +100,7 @@ public class JdbcDBClient extends DB {
   /** DB flavor defines DB-specific syntax and behavior for the
    * particular database. Current database flavors are: {default, phoenix} */
   private DBFlavor dbFlavor;
+  private boolean selectForUpdate;
 
   /**
    * Ordered field information for insert and update statements.
@@ -197,6 +200,9 @@ public class JdbcDBClient extends DB {
     // for transactional testing, force auto-commit off
     this.autoCommit = false;
     this.batchUpdates = getBoolProperty(props, JDBC_BATCH_UPDATES, false);
+
+    // for transactional testing, we might need "FOR UPDATE" syntax to lock row when reading
+    this.selectForUpdate = getBoolProperty(props, SELECT_FOR_UPDATE, DEFAULT_SELECT_FOR_UPDATE);
 
     try {
       if (driver != null) {
@@ -387,11 +393,20 @@ public class JdbcDBClient extends DB {
   @Override
   public Status read(String tableName, String key, Set<String> fields, Map<String, ByteIterator> result) {
     try {
-      StatementType type = new StatementType(StatementType.Type.READ, tableName, 1, "", getShardIndexByKey(key));
-      PreparedStatement readStatement = cachedStatements.get(type);
-      if (readStatement == null) {
-        readStatement = createAndCacheReadStatement(type, key);
+      PreparedStatement readStatement;
+      if (selectForUpdate) {
+        // For closed_economy_workload
+        // TODO: add it to DBFlavor
+        readStatement = createAndCacheReadForUpdateStatement(tableName, key);
+      } else {
+        // for normal read without locking the row
+        StatementType type = new StatementType(StatementType.Type.READ, tableName, 1, "", getShardIndexByKey(key));
+        readStatement = cachedStatements.get(type);
+        if (readStatement == null) {
+          readStatement = createAndCacheReadStatement(type, key);
+        }
       }
+
       readStatement.setString(1, key);
       ResultSet resultSet = readStatement.executeQuery();
       if (!resultSet.next()) {
@@ -610,33 +625,6 @@ public class JdbcDBClient extends DB {
       System.err.println("Error in processing validate to table: " + e.getMessage());
       e.printStackTrace();
       throw new DBException(e);
-    }
-  }
-
-  /** For closed_economy_workload */
-  @Override
-  public Status readForUpdate(String table, String key, Set<String> fields,
-                              Map<String, ByteIterator> result) {
-    try{
-      PreparedStatement readForUpdateStatement = createAndCacheReadForUpdateStatement(table, key);
-
-      readForUpdateStatement.setString(1, key);
-      ResultSet resultSet = readForUpdateStatement.executeQuery();
-      if (!resultSet.next()) {
-        resultSet.close();
-        return Status.NOT_FOUND;
-      }
-      if (result != null && fields != null) {
-        for (String field : fields) {
-          String value = resultSet.getString(field);
-          result.put(field, new StringByteIterator(value));
-        }
-      }
-      resultSet.close();
-      return Status.OK;
-    } catch (SQLException e) {
-      System.err.println("Error in processing read for update of table " + table + ": " + e);
-      return Status.ERROR;
     }
   }
 

@@ -643,8 +643,9 @@ public class ClosedEconomyWorkload extends Workload {
 
     // do the transaction
     long st = System.nanoTime();
-    Status firstReadStatus = db.readForUpdate(table, firstKey, fields, firstValues);
-    Status secondReadStatus = db.readForUpdate(table, secondKey, fields, secondValues);
+    // For some SQL database, remember to enable "SELECT * FOR UPDATE" to lock the row during transaction
+    Status firstReadStatus = db.read(table, firstKey, fields, firstValues);
+    Status secondReadStatus = db.read(table, secondKey, fields, secondValues);
     if (firstReadStatus.isOk() && secondReadStatus.isOk()) {
       try {
         long firstamount = Long.parseLong(firstValues.get(DEFAULT_FIELD_NAME)

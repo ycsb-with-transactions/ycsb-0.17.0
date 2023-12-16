@@ -314,16 +314,4 @@ public class DBWrapper extends DB {
     }
   }
 
-  public Status readForUpdate(String table, String key, Set<String> fields,
-                              Map<String, ByteIterator> result) {
-    try (final TraceScope span = tracer.newScope(scopeStringDelete)) {
-      long ist = measurements.getIntendedtartTimeNs();
-      long st = System.nanoTime();
-      Status res = db.readForUpdate(table, key, fields, result);
-      long en = System.nanoTime();
-      measure("READ-FOR-UPDATE", res, ist, st, en);
-      measurements.reportStatus("READ-FOR-UPDATE", res);
-      return res;
-    }
-  }
 }
