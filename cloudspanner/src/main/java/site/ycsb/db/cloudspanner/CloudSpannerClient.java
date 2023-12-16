@@ -238,28 +238,43 @@ public class CloudSpannerClient extends DB {
           .build();
     }
 
-    while (true) {
-      try (ResultSet resultSet = tx.executeQuery(query)) {
-        resultSet.next();
-        decodeStruct(columns, resultSet, result);
-        if (resultSet.next()) {
-          throw new Exception("Expected exactly one row for each read.");
-        }
-        break;
-      } catch (AbortedException ae) {
-        try {
-          Thread.sleep(ae.getRetryDelayInMillis() / 1000);
+//    while (true) {
+//      try (ResultSet resultSet = tx.executeQuery(query)) {
+//        resultSet.next();
+//        decodeStruct(columns, resultSet, result);
+//        if (resultSet.next()) {
+//          throw new Exception("Expected exactly one row for each read.");
+//        }
+//        break;
+//      } catch (AbortedException ae) {
+//        try {
+//          Thread.sleep(ae.getRetryDelayInMillis() / 1000);
 //          tx = transactionManager.resetForRetry();
-        } catch (InterruptedException ie) {
-          System.err.println("Sleep was interrupted: " + ie.getMessage());
-          return Status.ERROR;
-        }
-      } catch(Exception e) {
-        LOGGER.log(Level.INFO, "readUsingQuery()", e);
-        return Status.ERROR;
+//        } catch (InterruptedException ie) {
+//          System.err.println("Sleep was interrupted: " + ie.getMessage());
+//          return Status.ERROR;
+//        }
+//      } catch(Exception e) {
+//        LOGGER.log(Level.INFO, "readUsingQuery()", e);
+//        return Status.ERROR;
+//      }
+//    }
+//    return Status.OK;
+
+    try (ResultSet resultSet = tx.executeQuery(query)) {
+      resultSet.next();
+      decodeStruct(columns, resultSet, result);
+      if (resultSet.next()) {
+        throw new Exception("Expected exactly one row for each read.");
       }
+      return Status.OK;
+    } catch (AbortedException ae) {
+      return Status.ERROR;
+    } catch(Exception e) {
+      LOGGER.log(Level.INFO, "readUsingQuery()", e);
+      return Status.ERROR;
     }
-    return Status.OK;
+    
   }
 
   @Override
