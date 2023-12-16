@@ -17,6 +17,8 @@
 package site.ycsb.db.cloudspanner;
 
 import com.google.cloud.spanner.*;
+import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.Statement.Builder;
 import com.google.common.base.Joiner;
 import site.ycsb.ByteIterator;
 import site.ycsb.Client;
@@ -27,13 +29,7 @@ import site.ycsb.StringByteIterator;
 import site.ycsb.workloads.ClosedEconomyWorkload;
 import site.ycsb.workloads.CoreWorkload;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Vector;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.concurrent.TimeUnit;
@@ -87,6 +83,7 @@ public class CloudSpannerClient extends DB {
      * Number of Cloud Spanner client channels to use. It's recommended to leave this to be the default value.
      */
     static final String NUM_CHANNELS = "cloudspanner.channels";
+    static final String UPDATE_MODE = "cloudspanner.updatemode";
   }
 
   private static int fieldCount;
@@ -120,6 +117,7 @@ public class CloudSpannerClient extends DB {
 
   private TransactionManager transactionManager = null;
   private TransactionContext tx = null;
+  private static boolean queriesForUpdates;
 
   // Buffered mutations on a per object/thread basis for batch inserts.
   // Note that we have a separate CloudSpannerClient object per thread.
@@ -191,6 +189,7 @@ public class CloudSpannerClient extends DB {
       fieldCount = Integer.parseInt(properties.getProperty(
           CoreWorkload.FIELD_COUNT_PROPERTY, CoreWorkload.FIELD_COUNT_PROPERTY_DEFAULT));
       queriesForReads = properties.getProperty(CloudSpannerProperties.READ_MODE, "query").equals("query");
+      queriesForUpdates = properties.getProperty(CloudSpannerProperties.UPDATE_MODE, "buffer").equals("query");
       batchInserts = Integer.parseInt(properties.getProperty(CloudSpannerProperties.BATCH_INSERTS, "1"));
       constructStandardQueriesAndFields(properties);
 
@@ -349,6 +348,9 @@ public class CloudSpannerClient extends DB {
 
   @Override
   public Status update(String table, String key, Map<String, ByteIterator> values) {
+    if (queriesForUpdates) {
+      return updateUsingQuery(table, key, values);
+    }
     Mutation.WriteBuilder m = Mutation.newInsertOrUpdateBuilder(table);
     m.set(PRIMARY_KEY_COLUMN).to(key);
     for (Map.Entry<String, ByteIterator> e : values.entrySet()) {
@@ -489,4 +491,55 @@ public class CloudSpannerClient extends DB {
     }
     return Status.OK;
   }
-}
+
+  private Status updateUsingQuery(String table, String key, Map<String, ByteIterator> values){
+    if (values == null || values.isEmpty()) return Status.ERROR;
+
+    HashSet<String> fields = new HashSet<>(values.keySet());
+    Builder statementBuilder = Statement.newBuilder("UPDATE " + table + " SET ");
+    // Iterate over the fields and append them to the query
+    boolean firstField = true;
+    for (String field : fields) {
+      if (!firstField) {
+        statementBuilder.append(", ");
+      }
+      statementBuilder.append(field).append(" = @").append(field);
+      firstField = false;
+    }
+    // Append the WHERE clause
+    statementBuilder.append(" WHERE id = @id");
+    // Bind parameters
+    Builder boundStatementBuilder = statementBuilder.bind("id").to(key);
+    for (Map.Entry<String, ByteIterator> entry : values.entrySet()) {
+      boundStatementBuilder = boundStatementBuilder.bind(entry.getKey()).to(entry.getValue().toString());
+    }
+    Statement query = boundStatementBuilder.build();
+
+    int maxRetryCount = 5;
+    int currRetryCount = 0;
+    while (currRetryCount <= maxRetryCount) {
+      try {
+        long rowCount = tx.executeUpdate(query);
+        if (rowCount != 1) {
+          throw new Exception("Expected to update exactly one row.");
+        }
+        return Status.OK;
+      } catch (AbortedException ae) {
+        currRetryCount++;
+        try {
+          Thread.sleep(ae.getRetryDelayInMillis() / 1000);
+          tx = transactionManager.resetForRetry();
+        } catch (InterruptedException ie) {
+          System.err.println("Sleep was interrupted: " + ie.getMessage());
+          return Status.ERROR;
+        }
+      } catch(Exception e) {
+        LOGGER.log(Level.INFO, "updateUsingQuery()", e);
+        return Status.ERROR;
+      }
+    }
+    // exceeds max retry count;
+    return Status.ERROR;
+  }
+
+ }
