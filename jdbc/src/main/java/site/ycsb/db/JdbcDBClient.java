@@ -345,6 +345,7 @@ public class JdbcDBClient extends DB {
         .append(JdbcDBClient.PRIMARY_KEY).append(" = ").append("?").append(" FOR UPDATE");
     PreparedStatement readForUpdateStatement = getShardConnectionByKey(key).prepareStatement(readForUpdate.toString());
 
+    // TODO: enable caching
     // cache the statement if it is not cached, for concurrent threads
 //    PreparedStatement stmt = cachedStatements.putIfAbsent(null, readForUpdateStatement);
 //    if (stmt == null) {
@@ -396,7 +397,7 @@ public class JdbcDBClient extends DB {
       PreparedStatement readStatement;
       if (selectForUpdate) {
         // For closed_economy_workload
-        // TODO: add it to DBFlavor
+        // TODO: add it to DBFlavor and create statement type
         readStatement = createAndCacheReadForUpdateStatement(tableName, key);
       } else {
         // for normal read without locking the row

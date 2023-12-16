@@ -599,7 +599,7 @@ public class CockroachDBClient extends DB {
 
                       applyBackoffStrategy(retryCount);
                   } else {
-                      System.err.println("Non-retryable exceptioon ocuured in processing insert: " + e.getMessage());
+                      System.err.println("Non-retryable exception occurred in processing insert: " + e.getMessage());
                       e.printStackTrace();
                       throw e;
                   }
