@@ -515,9 +515,9 @@ public class CloudSpannerClient extends DB {
     }
     Statement query = boundStatementBuilder.build();
 
-    int maxRetryCount = 5;
-    int currRetryCount = 0;
-    while (currRetryCount <= maxRetryCount) {
+//    int maxRetryCount = 5;
+//    int currRetryCount = 0;
+//    while (currRetryCount <= maxRetryCount) {
       try {
         long rowCount = tx.executeUpdate(query);
         if (rowCount != 1) {
@@ -525,21 +525,22 @@ public class CloudSpannerClient extends DB {
         }
         return Status.OK;
       } catch (AbortedException ae) {
-        currRetryCount++;
-        try {
-          Thread.sleep(ae.getRetryDelayInMillis() / 1000);
-          tx = transactionManager.resetForRetry();
-        } catch (InterruptedException ie) {
-          System.err.println("Sleep was interrupted: " + ie.getMessage());
-          return Status.ERROR;
-        }
+        return Status.ERROR;
+//        currRetryCount++;
+//        try {
+//          Thread.sleep(ae.getRetryDelayInMillis() / 1000);
+//          tx = transactionManager.resetForRetry();
+//        } catch (InterruptedException ie) {
+//          System.err.println("Sleep was interrupted: " + ie.getMessage());
+//          return Status.ERROR;
+//        }
       } catch(Exception e) {
         LOGGER.log(Level.INFO, "updateUsingQuery()", e);
         return Status.ERROR;
       }
-    }
+//    }
     // exceeds max retry count;
-    return Status.ERROR;
+//    return Status.ERROR;
   }
 
  }
