@@ -122,6 +122,8 @@ LICENSE file.
     <cassandra.cql.version>3.0.0</cassandra.cql.version>
 <!--    <cloudspanner.version>0.36.0-beta</cloudspanner.version>-->
     <cloudspanner.version>6.51.0</cloudspanner.version>
+    <mysql-connector-j.version>8.1.0</mysql-connector-j.version>
+    <postgresql.version>42.2.27</postgresql.version>
     <google-cloud-spanner-jdbc.version>2.14.1</google-cloud-spanner-jdbc.version>
     <couchbase.version>1.4.10</couchbase.version>
 		<couchbase2.version>2.3.1</couchbase2.version>
