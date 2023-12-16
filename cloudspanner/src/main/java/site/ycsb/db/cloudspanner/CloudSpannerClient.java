@@ -249,7 +249,7 @@ public class CloudSpannerClient extends DB {
       } catch (AbortedException ae) {
         try {
           Thread.sleep(ae.getRetryDelayInMillis() / 1000);
-          tx = transactionManager.resetForRetry();
+//          tx = transactionManager.resetForRetry();
         } catch (InterruptedException ie) {
           System.err.println("Sleep was interrupted: " + ie.getMessage());
           return Status.ERROR;
