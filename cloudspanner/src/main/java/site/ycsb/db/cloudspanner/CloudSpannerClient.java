@@ -237,7 +237,7 @@ public class CloudSpannerClient extends DB {
           .bind("key").to(key)
           .build();
     }
-    
+
     try (ResultSet resultSet = tx.executeQuery(query)) {
       resultSet.next();
       decodeStruct(columns, resultSet, result);
@@ -290,28 +290,19 @@ public class CloudSpannerClient extends DB {
           .build();
     }
 
-    while (true) {
-      try (ResultSet resultSet = tx.executeQuery(query)) {
-        while (resultSet.next()) {
-          HashMap<String, ByteIterator> row = new HashMap<>();
-          decodeStruct(columns, resultSet, row);
-          result.add(row);
-        }
-        break;
-      } catch (AbortedException ae) {
-        try {
-          Thread.sleep(ae.getRetryDelayInMillis() / 1000);
-          tx = transactionManager.resetForRetry();
-        } catch (InterruptedException ie) {
-          System.err.println("Sleep was interrupted: " + ie.getMessage());
-          return Status.ERROR;
-        }
-      } catch (Exception e) {
-        LOGGER.log(Level.INFO, "scanUsingQuery()", e);
-        return Status.ERROR;
+    try (ResultSet resultSet = tx.executeQuery(query)) {
+      while (resultSet.next()) {
+        HashMap<String, ByteIterator> row = new HashMap<>();
+        decodeStruct(columns, resultSet, row);
+        result.add(row);
       }
+      return Status.OK;
+    } catch (AbortedException ae) {
+      return Status.ERROR;
+    } catch (Exception e) {
+      LOGGER.log(Level.INFO, "scanUsingQuery()", e);
+      return Status.ERROR;
     }
-    return Status.OK;
   }
 
 
