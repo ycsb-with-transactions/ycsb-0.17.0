@@ -527,8 +527,8 @@ public class CoreWorkload extends Workload {
         INSERTION_RETRY_LIMIT, INSERTION_RETRY_LIMIT_DEFAULT));
     insertionRetryInterval = Integer.parseInt(p.getProperty(
         INSERTION_RETRY_INTERVAL, INSERTION_RETRY_INTERVAL_DEFAULT));
-    System.out.printf("CONFIG, Record_Count, %s\n", recordcount);
-    System.out.printf("CONFIG, Request_Distrib, %s\n", requestdistrib);
+    System.out.printf("[CONFIG], Record_Count, %s\n", recordcount);
+    System.out.printf("[CONFIG], Request_Distrib, %s\n", requestdistrib);
   }
 
   protected String buildKeyName(long keynum) {
@@ -890,6 +890,12 @@ public class CoreWorkload extends Workload {
     if (readmodifywriteproportion > 0) {
       operationchooser.addValue(readmodifywriteproportion, "READMODIFYWRITE");
     }
+    System.out.printf("[CONFIG], %s_Proportion, %s\n", "READ", readproportion);
+    System.out.printf("[CONFIG], %s_Proportion, %s\n", "UPDATE", updateproportion);
+    System.out.printf("[CONFIG], %s_Proportion, %s\n", "INSERT", insertproportion);
+    System.out.printf("[CONFIG], %s_Proportion, %s\n", "SCAN",scanproportion);
+    System.out.printf("[CONFIG], %s_Proportion, %s\n", "READMODIFYWRITE",readmodifywriteproportion);
+
     return operationchooser;
   }
 }

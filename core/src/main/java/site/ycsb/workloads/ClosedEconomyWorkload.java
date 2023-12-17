@@ -469,6 +469,15 @@ public class ClosedEconomyWorkload extends Workload {
 
     validateByQuery = Boolean.parseBoolean(
         p.getProperty(VALIDATE_BY_QUERY_PROPERTY, VALIDATE_BY_QUERY_PROPERTY_DEFAULT));
+
+    // write out config
+    System.out.printf("[CONFIG], %s_Proportion, %s\n", "READ", readProportion);
+    System.out.printf("[CONFIG], %s_Proportion, %s\n", "UPDATE", updateProportion);
+    System.out.printf("[CONFIG], %s_Proportion, %s\n", "INSERT", insertProportion);
+    System.out.printf("[CONFIG], %s_Proportion, %s\n", "SCAN",scanProportion);
+    System.out.printf("[CONFIG], %s_Proportion, %s\n", "READMODIFYWRITE",readModifyWriteProportion);
+    System.out.printf("[CONFIG], Request_Distrib, %s\n",requestDistrib);
+
   }
 
   public String buildKeyName(long keyNum) {
