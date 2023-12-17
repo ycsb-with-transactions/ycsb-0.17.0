@@ -51,6 +51,10 @@ public class DBWrapper extends DB {
   private final String scopeStringRead;
   private final String scopeStringScan;
   private final String scopeStringUpdate;
+  private final String scopeStringStart;
+  private final String scopeStringCommit;
+  private final String scopeStringAbort;
+  private final String scopeStringValidate;
 
   public DBWrapper(final DB db, final Tracer tracer) {
     this.db = db;
@@ -64,6 +68,10 @@ public class DBWrapper extends DB {
     scopeStringRead = simple + "#read";
     scopeStringScan = simple + "#scan";
     scopeStringUpdate = simple + "#update";
+    scopeStringStart = simple + "#start";
+    scopeStringCommit = simple + "#commit";
+    scopeStringAbort = simple + "#abort";
+    scopeStringValidate = simple + "#validate";
   }
 
   /**
@@ -123,63 +131,76 @@ public class DBWrapper extends DB {
   }
 
   public void start() throws DBException {
-    long st=System.nanoTime();
-    try {
-      db.start();
-      long en = System.nanoTime();
-      measurements.measure("START", (int) ((en - st) / 1000));
-      measurements.reportStatus("START", Status.OK);
-    } catch (DBException e) {
-      long en=System.nanoTime();
-      measurements.measure("START",(int)((en-st)/1000));
-      measurements.reportStatus("START", Status.ERROR);
-      throw e;
+    try (final TraceScope span = tracer.newScope(scopeStringStart)) {
+      long ist = measurements.getIntendedtartTimeNs();
+      long st=System.nanoTime();
+      try {
+        db.start();
+        long en = System.nanoTime();
+        measure("START", Status.OK, ist, st, en);
+        measurements.reportStatus("START", Status.OK);
+      } catch (DBException e) {
+        long en=System.nanoTime();
+        measure("START", Status.ERROR, ist, st, en);
+        measurements.reportStatus("START", Status.ERROR);
+        throw e;
+      }
     }
 	}
 
 	public void commit() throws DBException {
-    long st=System.nanoTime();
-    try {
-      db.commit();
-      long en = System.nanoTime();
-      measurements.measure("COMMIT", (int) ((en - st) / 1000));
-      measurements.reportStatus("COMMIT", Status.OK);
-    } catch (DBException e) {
-      long en = System.nanoTime();
-      measurements.measure("COMMIT", (int) ((en - st) / 1000));
-      measurements.reportStatus("COMMIT", Status.ERROR);
-      throw e;
+    try (final TraceScope span = tracer.newScope(scopeStringCommit)) {
+      long ist = measurements.getIntendedtartTimeNs();
+      long st=System.nanoTime();
+      try {
+        db.commit();
+        long en = System.nanoTime();
+        measure("COMMIT", Status.OK, ist, st, en);
+        measurements.reportStatus("COMMIT", Status.OK);
+      } catch (DBException e) {
+        long en = System.nanoTime();
+        measure("COMMIT", Status.ERROR, ist, st, en);
+        measurements.reportStatus("COMMIT", Status.ERROR);
+        throw e;
+      }
     }
+
 	}
 
 	public void abort() throws DBException {
-    long st=System.nanoTime();
-    try {
-      db.abort();
-      long en = System.nanoTime();
-      measurements.measure("ABORT", (int) ((en - st) / 1000));
-      measurements.reportStatus("ABORT", Status.OK);
-    } catch (DBException e) {
-      long en=System.nanoTime();
-      measurements.measure("ABORT",(int)((en-st)/1000));
-      measurements.reportStatus("ABORT", Status.ERROR);
+    try (final TraceScope span = tracer.newScope(scopeStringAbort)) {
+      long ist = measurements.getIntendedtartTimeNs();
+      long st=System.nanoTime();
+      try {
+        db.abort();
+        long en = System.nanoTime();
+        measure("ABORT", Status.OK, ist, st, en);
+        measurements.reportStatus("ABORT", Status.OK);
+      } catch (DBException e) {
+        long en=System.nanoTime();
+        measure("ABORT", Status.ERROR, ist, st, en);
+        measurements.reportStatus("ABORT", Status.ERROR);
+      }
     }
 	}
 
   public long validate() throws DBException {
-    long st=System.nanoTime();
-    long countedSum;
-    try {
-      countedSum = db.validate();
-      long en = System.nanoTime();
-      measurements.measure("VALIDATE", (int) ((en - st) / 1000));
-      measurements.reportStatus("VALIDATE", Status.OK);
-      return countedSum;
-    } catch (DBException e) {
-      long en=System.nanoTime();
-      measurements.measure("VALIDATE",(int)((en-st)/1000));
-      measurements.reportStatus("VALIDATE", Status.ERROR);
-      throw e;
+    try (final TraceScope span = tracer.newScope(scopeStringValidate)) {
+      long ist = measurements.getIntendedtartTimeNs();
+      long st=System.nanoTime();
+      long countedSum;
+      try {
+        countedSum = db.validate();
+        long en = System.nanoTime();
+        measure("VALIDATE", Status.OK, ist, st, en);
+        measurements.reportStatus("VALIDATE", Status.OK);
+        return countedSum;
+      } catch (DBException e) {
+        long en=System.nanoTime();
+        measure("VALIDATE", Status.ERROR, ist, st, en);
+        measurements.reportStatus("VALIDATE", Status.ERROR);
+        throw e;
+      }
     }
   }
 
