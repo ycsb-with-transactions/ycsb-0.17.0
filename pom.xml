@@ -120,11 +120,7 @@ LICENSE file.
     <azurecosmos.version>2.2.3</azurecosmos.version>
     <azurestorage.version>4.0.0</azurestorage.version>
     <cassandra.cql.version>3.0.0</cassandra.cql.version>
-<!--    <cloudspanner.version>0.36.0-beta</cloudspanner.version>-->
     <cloudspanner.version>6.51.0</cloudspanner.version>
-    <mysql-connector-j.version>8.1.0</mysql-connector-j.version>
-    <postgresql.version>42.2.27</postgresql.version>
-    <google-cloud-spanner-jdbc.version>2.14.1</google-cloud-spanner-jdbc.version>
     <couchbase.version>1.4.10</couchbase.version>
 		<couchbase2.version>2.3.1</couchbase2.version>
 		<crail.version>1.1-incubating</crail.version>
@@ -132,6 +128,7 @@ LICENSE file.
     <foundationdb.version>5.2.5</foundationdb.version>
     <geode.version>1.2.0</geode.version>
     <googlebigtable.version>1.4.0</googlebigtable.version>
+<!--    <google-cloud-spanner-jdbc.version>2.14.1</google-cloud-spanner-jdbc.version>-->
     <griddb.version>4.0.0</griddb.version>
     <hbase098.version>0.98.14-hadoop2</hbase098.version>
     <hbase10.version>1.0.2</hbase10.version>
@@ -146,8 +143,10 @@ LICENSE file.
     <!--<mapkeeper.version>1.0</mapkeeper.version>-->
     <mongodb.version>4.5.0</mongodb.version>
     <mongodb.async.version>2.0.1</mongodb.async.version>
+    <mysql-connector-j.version>8.1.0</mysql-connector-j.version>
     <openjpa.jdbc.version>2.1.1</openjpa.jdbc.version>
     <orientdb.version>2.2.37</orientdb.version>
+    <postgresql.version>42.2.27</postgresql.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <redis.version>2.9.0</redis.version>
     <riak.version>2.0.5</riak.version>
