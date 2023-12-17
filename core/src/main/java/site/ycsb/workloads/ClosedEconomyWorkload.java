@@ -471,13 +471,14 @@ public class ClosedEconomyWorkload extends Workload {
         p.getProperty(VALIDATE_BY_QUERY_PROPERTY, VALIDATE_BY_QUERY_PROPERTY_DEFAULT));
 
     // write out config
-    System.out.printf("[CONFIG], %s_Proportion, %s\n", "READ", readProportion);
-    System.out.printf("[CONFIG], %s_Proportion, %s\n", "UPDATE", updateProportion);
-    System.out.printf("[CONFIG], %s_Proportion, %s\n", "INSERT", insertProportion);
-    System.out.printf("[CONFIG], %s_Proportion, %s\n", "SCAN",scanProportion);
-    System.out.printf("[CONFIG], %s_Proportion, %s\n", "READMODIFYWRITE",readModifyWriteProportion);
-    System.out.printf("[CONFIG], Request_Distrib, %s\n",requestDistrib);
-
+    StringBuilder sb = new StringBuilder();
+    sb.append("[CONFIG], READ_Proportion, ").append(readProportion).append("\n")
+        .append("[CONFIG], UPDATE_Proportion, ").append(updateProportion).append("\n")
+        .append("[CONFIG], INSERT_Proportion, ").append(insertProportion).append("\n")
+        .append("[CONFIG], SCAN_Proportion, ").append(scanProportion).append("\n")
+        .append("[CONFIG], READMODIFYWRITE_Proportion, ").append(readModifyWriteProportion).append("\n")
+        .append("[CONFIG], Request_Distrib, ").append(requestDistrib).append("\n");
+    System.out.println(sb.toString());
   }
 
   public String buildKeyName(long keyNum) {
@@ -653,9 +654,7 @@ public class ClosedEconomyWorkload extends Workload {
     // do the transaction
     long st = System.nanoTime();
     // For some SQL database, remember to enable "SELECT * FOR UPDATE" to lock the row during transaction
-    Status firstReadStatus = db.read(table, firstKey, fields, firstValues);
-    Status secondReadStatus = db.read(table, secondKey, fields, secondValues);
-    if (firstReadStatus.isOk() && secondReadStatus.isOk()) {
+    if (db.read(table, firstKey, fields, firstValues).isOk() && db.read(table, secondKey, fields, secondValues).isOk()) {
       try {
         long firstamount = Long.parseLong(firstValues.get(DEFAULT_FIELD_NAME)
             .toString());
