@@ -127,6 +127,8 @@ public abstract class Workload {
    * @throws WorkloadException 
    */
   public boolean validate(DB db) throws WorkloadException {
-    return true;
+    System.err.println("No validation done due to no validate() implementation in this workload.");
+    System.out.println("[VALIDATE], STATUS, NO IMPLEMENTATION");
+    return false;
   }
 }

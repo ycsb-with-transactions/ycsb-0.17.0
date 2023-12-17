@@ -784,8 +784,7 @@ public class ClosedEconomyWorkload extends Workload {
     }
 
     if (counted_sum == -1) {
-      System.err.println("No validation done due to no validate() implementation, " +
-          "switching to validate by read method.");
+      System.err.println("No validation done due to no validate() implementation in this database client.");
       System.out.println("[VALIDATE], STATUS, FAILED-NO IMPLEMENTATION");
       return false;
     }
