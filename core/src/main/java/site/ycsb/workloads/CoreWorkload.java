@@ -890,11 +890,13 @@ public class CoreWorkload extends Workload {
     if (readmodifywriteproportion > 0) {
       operationchooser.addValue(readmodifywriteproportion, "READMODIFYWRITE");
     }
-    System.out.printf("[CONFIG], %s_Proportion, %s\n", "READ", readproportion);
-    System.out.printf("[CONFIG], %s_Proportion, %s\n", "UPDATE", updateproportion);
-    System.out.printf("[CONFIG], %s_Proportion, %s\n", "INSERT", insertproportion);
-    System.out.printf("[CONFIG], %s_Proportion, %s\n", "SCAN",scanproportion);
-    System.out.printf("[CONFIG], %s_Proportion, %s\n", "READMODIFYWRITE",readmodifywriteproportion);
+
+    String s = "[CONFIG], READ_Proportion, " + readproportion + "\n" +
+        "[CONFIG], UPDATE_Proportion, " + updateproportion + "\n" +
+        "[CONFIG], INSERT_Proportion, " + insertproportion + "\n" +
+        "[CONFIG], SCAN_Proportion, " + scanproportion + "\n" +
+        "[CONFIG], READMODIFYWRITE_Proportion, " + readmodifywriteproportion;
+    System.out.println(s);
 
     return operationchooser;
   }

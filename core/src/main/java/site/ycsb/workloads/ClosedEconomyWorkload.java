@@ -471,14 +471,14 @@ public class ClosedEconomyWorkload extends Workload {
         p.getProperty(VALIDATE_BY_QUERY_PROPERTY, VALIDATE_BY_QUERY_PROPERTY_DEFAULT));
 
     // write out config
-    StringBuilder sb = new StringBuilder();
-    sb.append("[CONFIG], READ_Proportion, ").append(readProportion).append("\n")
-        .append("[CONFIG], UPDATE_Proportion, ").append(updateProportion).append("\n")
-        .append("[CONFIG], INSERT_Proportion, ").append(insertProportion).append("\n")
-        .append("[CONFIG], SCAN_Proportion, ").append(scanProportion).append("\n")
-        .append("[CONFIG], READMODIFYWRITE_Proportion, ").append(readModifyWriteProportion).append("\n")
-        .append("[CONFIG], Request_Distrib, ").append(requestDistrib).append("\n");
-    System.out.println(sb.toString());
+    String s = "[CONFIG], READ_Proportion, " + readProportion + "\n" +
+        "[CONFIG], UPDATE_Proportion, " + updateProportion + "\n" +
+        "[CONFIG], INSERT_Proportion, " + insertProportion + "\n" +
+        "[CONFIG], SCAN_Proportion, " + scanProportion + "\n" +
+        "[CONFIG], READMODIFYWRITE_Proportion, " + readModifyWriteProportion + "\n" +
+        "[CONFIG], Request_Distrib, " + requestDistrib + "\n" +
+        "[CONFIG], Record_Count, " + recordCount;
+    System.out.println(s);
   }
 
   public String buildKeyName(long keyNum) {
