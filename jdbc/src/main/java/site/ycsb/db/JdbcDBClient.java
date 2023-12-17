@@ -533,6 +533,8 @@ public class JdbcDBClient extends DB {
         // Normal update
         int result = insertStatement.executeUpdate();
         // If we are not autoCommit, we might have to commit now
+        // TODO: may remove autocommit in insert, altho currently do not affect workload a/b/f
+        // TODO: but with batch insert, need to be careful about the actual rows inserted when encountering commit error
         if (!autoCommit) {
           // Let updates be batcher locally
           if (batchSize > 0) {

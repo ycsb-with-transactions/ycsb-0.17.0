@@ -377,6 +377,7 @@ public class CockroachDBClient extends DB {
       readStatement.setString(1, key);
 
       /** Retry logic */
+      // TODO: try removing retry logic
       int retryCount = 0;
       while (retryCount <= MAX_RETRY_COUNT) {
         ResultSet resultSet = null;
