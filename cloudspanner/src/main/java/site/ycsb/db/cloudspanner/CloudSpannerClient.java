@@ -189,7 +189,7 @@ public class CloudSpannerClient extends DB {
       fieldCount = Integer.parseInt(properties.getProperty(
           CoreWorkload.FIELD_COUNT_PROPERTY, CoreWorkload.FIELD_COUNT_PROPERTY_DEFAULT));
       queriesForReads = properties.getProperty(CloudSpannerProperties.READ_MODE, "query").equals("query");
-      queriesForUpdates = properties.getProperty(CloudSpannerProperties.UPDATE_MODE, "buffer").equals("query");
+      queriesForUpdates = properties.getProperty(CloudSpannerProperties.UPDATE_MODE, "update").equals("query");
       batchInserts = Integer.parseInt(properties.getProperty(CloudSpannerProperties.BATCH_INSERTS, "1"));
       constructStandardQueriesAndFields(properties);
 
