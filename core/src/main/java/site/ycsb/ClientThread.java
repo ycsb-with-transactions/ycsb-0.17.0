@@ -46,8 +46,10 @@ public class ClientThread implements Runnable {
   private final Measurements measurements;
 
   private int maxRetryCount;
-
   private int waitTimeBeforeRetry;
+
+  private final static int DEFAULT_RETRY_COUNT = 3;
+  private final static int DEFAULT_WAIT_TIME_BEFORE_RETRY = 100;
 
   /**
    * Constructor.
@@ -75,8 +77,8 @@ public class ClientThread implements Runnable {
     measurements = Measurements.getMeasurements();
     spinSleep = Boolean.valueOf(this.props.getProperty("spin.sleep", "false"));
     this.completeLatch = completeLatch;
-    this.maxRetryCount = 3;
-    this.waitTimeBeforeRetry = 100;
+    this.maxRetryCount = DEFAULT_RETRY_COUNT;
+    this.waitTimeBeforeRetry = DEFAULT_WAIT_TIME_BEFORE_RETRY;
   }
 
   public void setThreadId(final int threadId) {
@@ -142,6 +144,7 @@ public class ClientThread implements Runnable {
 
             // if transaction operation fails or commit fails, we retry and abort the previous transaction
             retryCount++;
+            // null op if already aborted
             db.abort();
 
             if (retryCount > maxRetryCount) {
@@ -167,21 +170,21 @@ public class ClientThread implements Runnable {
         while (((opcount == 0) || (opsdone < opcount)) && !workload.isStopRequested()) {
           int retryCount = 0;
           // denote whether it is a retry, if not, we do insert
-          boolean isRetry = false;
+//          boolean isRetry = false;
           while (retryCount <= maxRetryCount) {
             try {
                 db.start();
-                if (isRetry) {
-                    db.commit();
-                } else {
+//                if (isRetry) {
+//                    db.commit();
+//                } else {
                   if (workload.doInsert(db, workloadstate)) {
                     db.commit();
                   }
-                }
+//                }
                 break;
             } catch (DBException e) {
               retryCount++;
-              isRetry = true;
+//              isRetry = true;
               if (retryCount == maxRetryCount) {
                 db.abort();
                 System.err.println("Insert retry limits reached...");

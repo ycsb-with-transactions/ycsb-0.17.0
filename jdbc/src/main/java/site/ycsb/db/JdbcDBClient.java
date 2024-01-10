@@ -521,6 +521,7 @@ public class JdbcDBClient extends DB {
               }
             }
             // If autoCommit is off, make sure we commit the batch
+            // todo: fix auto commit if there's transaction
             if (!autoCommit) {
               getShardConnectionByKey(key).commit();
             }
@@ -533,7 +534,7 @@ public class JdbcDBClient extends DB {
         // Normal update
         int result = insertStatement.executeUpdate();
         // If we are not autoCommit, we might have to commit now
-        // TODO: may remove autocommit in insert, altho currently do not affect workload a/b/f
+        // TODO: may remove autocommit in insert, altho currently do not affect workload a/b/f, but it affects workloads for only loading
         // TODO: but with batch insert, need to be careful about the actual rows inserted when encountering commit error
         if (!autoCommit) {
           // Let updates be batcher locally
@@ -542,7 +543,6 @@ public class JdbcDBClient extends DB {
               // Send the batch of updates
               getShardConnectionByKey(key).commit();
             }
-            // uhh
             return Status.OK;
           } else {
             // Commit each update
