@@ -374,11 +374,11 @@ public class CloudSpannerClient extends DB {
     }
     try {
       tx.buffer(bufferedMutations);
-      System.out.println(bufferedMutations.size());
-      System.err.println(bufferedMutations.size());
+      System.out.println(Thread.currentThread().getName()+ bufferedMutations.size());
+      System.err.println(Thread.currentThread().getName()+ bufferedMutations.size());
       bufferedMutations.clear();
-      System.out.println("end" + bufferedMutations.size());
-      System.err.println("end" + bufferedMutations.size());
+      System.out.println(Thread.currentThread().getName()+ "end" + bufferedMutations.size());
+      System.err.println(Thread.currentThread().getName()+ "end" + bufferedMutations.size());
     } catch (Exception e) {
       LOGGER.log(Level.INFO, "insert()", e);
       return Status.ERROR;

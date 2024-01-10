@@ -186,6 +186,8 @@ public class ClientThread implements Runnable {
               retryCount++;
 //              isRetry = true;
               db.abort();
+              System.out.println(Thread.currentThread().getName() + "aborting transaction.");
+              System.err.println(Thread.currentThread().getName() + "aborting transaction.");
               if (retryCount == maxRetryCount) {
                 db.abort();
                 System.err.println("Insert retry limits reached...");
