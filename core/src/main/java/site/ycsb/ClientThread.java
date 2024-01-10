@@ -170,21 +170,22 @@ public class ClientThread implements Runnable {
         while (((opcount == 0) || (opsdone < opcount)) && !workload.isStopRequested()) {
           int retryCount = 0;
           // denote whether it is a retry, if not, we do insert
-          boolean isRetry = false;
+//          boolean isRetry = false;
           while (retryCount <= maxRetryCount) {
             try {
                 db.start();
-                if (isRetry) {
-                    db.commit();
-                } else {
+//                if (isRetry) {
+//                    db.commit();
+//                } else {
                   if (workload.doInsert(db, workloadstate)) {
                     db.commit();
                   }
-                }
+//                }
                 break;
             } catch (DBException e) {
               retryCount++;
-              isRetry = true;
+//              isRetry = true;
+              db.abort();
               if (retryCount == maxRetryCount) {
                 db.abort();
                 System.err.println("Insert retry limits reached...");
