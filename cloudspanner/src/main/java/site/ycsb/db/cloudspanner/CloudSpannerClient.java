@@ -83,12 +83,17 @@ public class CloudSpannerClient extends DB {
      * Number of Cloud Spanner client channels to use. It's recommended to leave this to be the default value.
      */
     static final String NUM_CHANNELS = "cloudspanner.channels";
+    /**
+     * Choose between 'update' and 'query'. Affects only update() operations.
+     */
     static final String UPDATE_MODE = "cloudspanner.updatemode";
   }
 
   private static int fieldCount;
 
   private static boolean queriesForReads;
+
+  private static boolean queriesForUpdates;
 
   private static int batchInserts;
 
@@ -115,9 +120,11 @@ public class CloudSpannerClient extends DB {
   // Single database client per process.
   private static DatabaseClient dbClient = null;
 
+  // Create the transaction manager in start() before operations starts.
   private TransactionManager transactionManager = null;
+
+  // Used for executing operations in transactions.
   private TransactionContext tx = null;
-  private static boolean queriesForUpdates;
 
   // Buffered mutations on a per object/thread basis for batch inserts.
   // Note that we have a separate CloudSpannerClient object per thread.
@@ -152,8 +159,6 @@ public class CloudSpannerClient extends DB {
     SpannerOptions.Builder optionsBuilder = SpannerOptions.newBuilder()
         .setSessionPoolOption(SessionPoolOptions.newBuilder()
             .setMinSessions(numThreads)
-            // Since we have no read-write transactions, we can set the write session fraction to 0.
-//            .setWriteSessionsFraction(0)
             .build());
     if (host != null) {
       optionsBuilder.setHost(host);
@@ -221,6 +226,7 @@ public class CloudSpannerClient extends DB {
     }
   }
 
+  // Read operations must be executed in the TransactionContext for transactional testing.
   private Status readUsingQuery(
       String table, String key, Set<String> fields, Map<String, ByteIterator> result) {
     Statement query;
@@ -251,9 +257,9 @@ public class CloudSpannerClient extends DB {
       LOGGER.log(Level.INFO, "readUsingQuery()", e);
       return Status.ERROR;
     }
-
   }
 
+  // Read operations must be executed in the TransactionContext for transactional testing.
   @Override
   public Status read(
       String table, String key, Set<String> fields, Map<String, ByteIterator> result) {
@@ -271,6 +277,7 @@ public class CloudSpannerClient extends DB {
     }
   }
 
+  // Scan operations must be executed in the TransactionContext for transactional testing.
   private Status scanUsingQuery(
       String table, String startKey, int recordCount, Set<String> fields,
       Vector<HashMap<String, ByteIterator>> result) {
@@ -305,7 +312,7 @@ public class CloudSpannerClient extends DB {
     }
   }
 
-
+  // Scan operations must be executed in the TransactionContext for transactional testing.
   @Override
   public Status scan(
       String table, String startKey, int recordCount, Set<String> fields,
@@ -329,6 +336,7 @@ public class CloudSpannerClient extends DB {
     }
   }
 
+  // Update operations must be executed in the TransactionContext for transactional testing.
   @Override
   public Status update(String table, String key, Map<String, ByteIterator> values) {
     if (queriesForUpdates) {
