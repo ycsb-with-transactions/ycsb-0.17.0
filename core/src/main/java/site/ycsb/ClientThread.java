@@ -168,10 +168,10 @@ public class ClientThread implements Runnable {
         long startTimeNanos = System.nanoTime();
 
         while (((opcount == 0) || (opsdone < opcount)) && !workload.isStopRequested()) {
-          int retryCount = 0;
+//          int retryCount = 0;
           // denote whether it is a retry, if not, we do insert
 //          boolean isRetry = false;
-          while (retryCount <= maxRetryCount) {
+//          while (retryCount <= maxRetryCount) {
             try {
                 db.start();
 //                if (isRetry) {
@@ -183,6 +183,8 @@ public class ClientThread implements Runnable {
 //                }
                 break;
             } catch (DBException e) {
+              // ignore
+              /*
               retryCount++;
 //              isRetry = true;
               db.abort();
@@ -202,8 +204,9 @@ public class ClientThread implements Runnable {
                 Thread.currentThread().interrupt();
                 throw new WorkloadException("Thread interrupted during sleep", ie);
               }
+              */
             }
-          }
+//          }
 
           opsdone++;
 
