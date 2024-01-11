@@ -377,8 +377,6 @@ public class CloudSpannerClient extends DB {
       System.out.println(Thread.currentThread().getName() + ":     " + bufferedMutations.size());
       System.err.println(Thread.currentThread().getName() + ":     "+ bufferedMutations.size());
       bufferedMutations.clear();
-      System.out.println(Thread.currentThread().getName() + ":     " + bufferedMutations.size()+ "     -     end");
-      System.err.println(Thread.currentThread().getName() + ":     "+  bufferedMutations.size()+ "     -     end");
     } catch (Exception e) {
       LOGGER.log(Level.INFO, "insert()", e);
       return Status.ERROR;
@@ -390,6 +388,7 @@ public class CloudSpannerClient extends DB {
   public void cleanup() {
     try {
       if (bufferedMutations.size() > 0) {
+        System.out.println(Thread.currentThread().getName() + ":     " + bufferedMutations.size()+ "     -     clean-up");
         transactionManager = dbClient.transactionManager();
         tx = transactionManager.begin();
         tx.buffer(bufferedMutations);
@@ -440,6 +439,8 @@ public class CloudSpannerClient extends DB {
   public void abort() throws DBException {
     super.abort();
     transactionManager.close();
+    System.out.println(Thread.currentThread().getName() + ":     " + bufferedMutations.size()+ "     -     aborted");
+    System.err.println(Thread.currentThread().getName() + ":     "+  bufferedMutations.size()+ "     -     aborted");
   }
 
   @Override

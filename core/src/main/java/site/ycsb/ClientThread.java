@@ -189,7 +189,7 @@ public class ClientThread implements Runnable {
               System.out.println(Thread.currentThread().getName() + ":     " + "aborting transaction.");
               System.err.println(Thread.currentThread().getName() + ":     " + "aborting transaction.");
               if (retryCount == maxRetryCount) {
-                db.abort();
+//                db.abort();
                 System.err.println("Insert retry limits reached...");
                 e.printStackTrace();
                 e.printStackTrace(System.out);
@@ -200,7 +200,7 @@ public class ClientThread implements Runnable {
                 Thread.sleep(waitTimeBeforeRetry);
               } catch (InterruptedException ie) {
                 Thread.currentThread().interrupt();
-                throw new WorkloadException("Thread interrupted during backoff", ie);
+                throw new WorkloadException("Thread interrupted during sleep", ie);
               }
             }
           }
