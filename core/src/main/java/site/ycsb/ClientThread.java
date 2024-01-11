@@ -183,7 +183,7 @@ public class ClientThread implements Runnable {
 //                }
 //                break;
             } catch (DBException e) {
-              // ignore
+              db.abort();
               /*
               retryCount++;
 //              isRetry = true;
