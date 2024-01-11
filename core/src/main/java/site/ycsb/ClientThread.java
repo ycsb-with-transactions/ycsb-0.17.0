@@ -168,6 +168,7 @@ public class ClientThread implements Runnable {
         long startTimeNanos = System.nanoTime();
 
         while (((opcount == 0) || (opsdone < opcount)) && !workload.isStopRequested()) {
+          // todo: remove the commented code when tests are done if no longer needed
 //          int retryCount = 0;
           // denote whether it is a retry, if not, we do insert
 //          boolean isRetry = false;
