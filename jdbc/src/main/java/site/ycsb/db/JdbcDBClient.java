@@ -83,6 +83,8 @@ public class JdbcDBClient extends DB {
 
   /** The field name prefix in the table. */
   public static final String COLUMN_PREFIX = "FIELD";
+
+  /** The option for using 'SELECT FOR UPDATE' to enable locking read operation. */
   public static final String SELECT_FOR_UPDATE = "db.selectForUpdate";
   public static final boolean DEFAULT_SELECT_FOR_UPDATE = false;
 
@@ -604,7 +606,7 @@ public class JdbcDBClient extends DB {
   public long validate() throws DBException{
     super.validate();
 
-    /** check driver class and pass corresponding validate query */
+    /** check driver class and pass corresponding validation query */
     String driverClass = props.getProperty(DRIVER_CLASS);
     String psqlValidateQuery = "SELECT SUM(field0::numeric) FROM usertable;";
     String mysqlValidateQuery = "SELECT SUM(CAST(field0 AS SIGNED)) FROM usertable;";
