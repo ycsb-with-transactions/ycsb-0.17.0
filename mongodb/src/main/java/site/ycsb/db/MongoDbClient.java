@@ -115,6 +115,7 @@ public class MongoDbClient extends DB {
    */
   @Override
   public void cleanup() throws DBException {
+    // todo: might need to clear the uncommitted Documents in bulkInserts array
     if (INIT_COUNT.decrementAndGet() == 0) {
       try {
         // session.close();
@@ -477,6 +478,8 @@ public class MongoDbClient extends DB {
 
   @Override
   public void commit(){
+    // todo: might need to add try-catch block for exceptions like MongoCommandException, etc.
+    // after catching the exception, throw DBException
     session.commitTransaction();
     session.close();
   }
