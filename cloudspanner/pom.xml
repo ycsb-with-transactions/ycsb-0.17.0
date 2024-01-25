@@ -35,12 +35,13 @@ LICENSE file.
       <artifactId>google-cloud-spanner</artifactId>
       <version>${cloudspanner.version}</version>
 <!--      <version>6.51.0</version>-->
-      <exclusions>
-        <exclusion> <!-- exclude an old version of Guava -->
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava-jdk5</artifactId>
-        </exclusion>
-      </exclusions>
+<!--      <exclusions>-->
+<!--        <exclusion> -->
+<!--          &lt;!&ndash; exclude an old version of Guava &ndash;&gt;-->
+<!--          <groupId>com.google.guava</groupId>-->
+<!--          <artifactId>guava-jdk5</artifactId>-->
+<!--        </exclusion>-->
+<!--      </exclusions>-->
     </dependency>
 
     
