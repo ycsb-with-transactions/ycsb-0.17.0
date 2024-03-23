@@ -149,7 +149,7 @@ public class MongoDbClient extends DB {
 
       Document query = new Document("_id", key);
       DeleteResult result =
-          collection.withWriteConcern(writeConcern).deleteOne(query);
+          collection.withWriteConcern(writeConcern).deleteOne(session, query);
       if (result.wasAcknowledged() && result.getDeletedCount() == 0) {
         System.err.println("Nothing deleted for key " + key);
         return Status.NOT_FOUND;
@@ -322,7 +322,7 @@ public class MongoDbClient extends DB {
       MongoCollection<Document> collection = database.getCollection(table);
       Document query = new Document("_id", key);
 
-      FindIterable<Document> findIterable = collection.find(query);
+      FindIterable<Document> findIterable = collection.find(session, query);
 
       if (fields != null) {
         Document projection = new Document();
@@ -374,7 +374,7 @@ public class MongoDbClient extends DB {
       Document sort = new Document("_id", INCLUDE);
 
       FindIterable<Document> findIterable =
-          collection.find(query).sort(sort).limit(recordcount);
+          collection.find(session, query).sort(sort).limit(recordcount);
 
       if (fields != null) {
         Document projection = new Document();
@@ -441,7 +441,7 @@ public class MongoDbClient extends DB {
       }
       Document update = new Document("$set", fieldsToSet);
 
-      UpdateResult result = collection.updateOne(query, update);
+      UpdateResult result = collection.updateOne(session, query, update);
       if (result.wasAcknowledged() && result.getMatchedCount() == 0) {
         System.err.println("Nothing updated for key " + key);
         return Status.NOT_FOUND;
@@ -477,11 +477,15 @@ public class MongoDbClient extends DB {
   }
 
   @Override
-  public void commit(){
+  public void commit() throws DBException {
     // todo: might need to add try-catch block for exceptions like MongoCommandException, etc.
     // after catching the exception, throw DBException
-    session.commitTransaction();
-    session.close();
+    try {
+      session.commitTransaction();
+      session.close();
+    } catch (Exception e){
+      throw new DBException(e);
+    }
   }
 
   @Override
