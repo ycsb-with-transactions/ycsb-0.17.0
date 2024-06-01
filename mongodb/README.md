@@ -161,7 +161,7 @@ To run with the synchronous driver from MongoDB Inc.:
 
     ./bin/ycsb load mongodb -s -P workloads/workloada -p mongodb.url=mongodb://localhost:27017/ycsb?w=0
 
-## Running MongoDB on Linux VM with 
+## Running MongoDB on Linux VM 
 
 ### Load
 To load the data, modify the mongodb.url from the local version. Here is a page from MongoDB with useful information on how to do that: https://www.mongodb.com/docs/v3.0/reference/connection-string/. 
